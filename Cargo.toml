@@ -1,0 +1,50 @@
+[package]
+name = "cracken"
+version = "0.1.0"
+authors = ["shmuelamar"]
+edition = "2018"
+build = "build.rs"
+description = "a fast password wordlist generator"
+homepage = "https://github.com/shmuelamar/cracken"
+repository = "https://github.com/shmuelamar/cracken"
+keywords = ["password", "crack", "cracking", "wordlist-generator", "security"]
+categories = ["command-line-utilities", "cryptography"]
+readme = "README.md"
+license = "MIT"
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+]
+
+[lib]
+name = "cracken"
+path = "src/lib.rs"
+
+[[bin]]
+name = "cracken"
+path = "src/main.rs"
+
+[[bench]]
+name = "bench"
+harness = false
+
+[profile.release]
+lto = true
+opt-level = 3
+codegen-units = 1
+
+[profile.bench]
+lto = true
+opt-level = 3
+codegen-units = 1
+
+[dependencies]
+clap = { version = "~2.33.0", features = [ "suggestions", "color" , "wrap_help"] }
+regex = "~1"
+lazy_static = "~1.3.0"
+
+[dev-dependencies]
+criterion = "0.2"
+
+[build-dependencies]
+built = "0.3"
