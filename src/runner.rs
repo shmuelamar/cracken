@@ -1,4 +1,4 @@
-use super::{built_info, WordGenerator};
+use crate::{built_info, WordGenerator};
 use clap::{App, Arg, ArgMatches};
 use std::env;
 use std::fs::File;
