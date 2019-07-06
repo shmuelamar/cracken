@@ -150,11 +150,11 @@ Feel free to submit PRs and open issues.
 ### Features List
 
 * [x] min/max word length
-* [ ] custom charset
+* [x] custom charset
 * [ ] wordlist(s) as input
 * [ ] input file of list of masks
 * [ ] fixed chars
-* [ ] number of total passwords to generate
+* [x] number of total passwords to generate
 * [ ] stderr status tracker thread
 * [ ] compression
 * [ ] multithreading
