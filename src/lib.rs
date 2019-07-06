@@ -17,12 +17,57 @@ const KB: usize = 1024;
 const BUFFER_SIZE: usize = 4 * KB;
 pub const MAX_WORD_SIZE: usize = 128;
 
+#[derive(Debug, PartialEq)]
+enum MaskOp {
+    Char(char),
+    BuiltinCharset(char),
+    CustomCharset(usize),
+}
+
+/// returns true iff the mask is valid
 fn is_valid_mask(mask: &str) -> bool {
     lazy_static! {
         static ref RE: Regex =
-            Regex::new(format!(r"^(\?[ludsab1-9]){{1,{}}}$", MAX_WORD_SIZE).as_str()).unwrap();
+            Regex::new(format!(r"^(\?[ludsab1-9]|\\.|[^?\\]){{1,{}}}$", MAX_WORD_SIZE).as_str())
+                .unwrap();
     }
     RE.is_match(mask)
+}
+
+/// parses `mask` string into the operations it means
+fn parse_mask(mask: &str) -> Result<Vec<MaskOp>, &'static str> {
+    if !is_valid_mask(mask) {
+        return Err("Invalid mask");
+    }
+
+    let mut mask_ops = vec![];
+    let mut chars = mask.chars();
+    let mut next = chars.next();
+
+    while next.is_some() {
+        let ch = next.unwrap();
+        match ch {
+            // 1. escaped char (like \?)
+            '\\' => mask_ops.push(MaskOp::Char(chars.next().unwrap())),
+            // 2. charsets (like ?d)
+            '?' => {
+                let next_chr = chars.next().unwrap();
+
+                // 2.1 custom charset
+                if next_chr.is_digit(10) {
+                    mask_ops.push(MaskOp::CustomCharset(((next_chr as u8) - b'1') as usize))
+
+                // 2.2 builtin charset
+                } else {
+                    mask_ops.push(MaskOp::BuiltinCharset(next_chr))
+                }
+            }
+            // 3. single char
+            _ => mask_ops.push(MaskOp::Char(ch)),
+        }
+        next = chars.next();
+    }
+    Ok(mask_ops)
 }
 
 pub struct WordGenerator<'a> {
@@ -40,27 +85,15 @@ impl<'a> WordGenerator<'a> {
         maxlen: Option<usize>,
         custom_charsets: &[&'a str],
     ) -> Result<WordGenerator<'a>, &'static str> {
-        if !is_valid_mask(mask) {
-            return Err("invalid mask");
-        }
+        let mask_ops = parse_mask(mask)?;
 
-        // TODO: return error
-        // build charsets
-        let charsets: Vec<_> = mask
-            .split('?')
-            .skip(1)
-            .map(|chr| {
-                let ch = chr.chars().next().unwrap();
-
-                // custom charset
-                if ch.is_digit(10) && ch != '0' {
-                    let idx = (ch as u8 - b'1') as usize;
-                    Charset::from_chars(&custom_charsets[idx].as_bytes())
-
-                // builtin charset
-                } else {
-                    Charset::from_symbol(ch)
-                }
+        // TODO: return error from custom_charset not in index & invalid symbol
+        let charsets: Vec<_> = mask_ops
+            .into_iter()
+            .map(|op| match op {
+                MaskOp::Char(ch) => Charset::from_chars(vec![ch as u8].as_ref()),
+                MaskOp::BuiltinCharset(ch) => Charset::from_symbol(ch),
+                MaskOp::CustomCharset(idx) => Charset::from_chars(custom_charsets[idx].as_bytes()),
             })
             .collect();
 
@@ -199,11 +232,10 @@ pub mod built_info {
 
 #[cfg(test)]
 mod tests {
+    use crate::{MaskOp, StackBuf, WordGenerator};
     use std::fs;
     use std::io::Cursor;
     use std::path;
-
-    use crate::{StackBuf, WordGenerator};
 
     #[test]
     fn test_gen_words_single_digit() {
@@ -234,6 +266,20 @@ mod tests {
         assert_eq!(word_gen.min_word, "AaAa".as_bytes());
 
         assert_gen(word_gen, "upper-lower-1-4.txt");
+    }
+
+    #[test]
+    fn test_gen_pwd_upper_lower_year_1_4() {
+        let mask = "pwd?u?l201?1";
+        let word_gen = WordGenerator::new(mask, Some(1), None, &vec!["56789"]).unwrap();
+
+        assert_eq!(word_gen.mask, mask);
+        assert_eq!(word_gen.minlen, 1);
+        assert_eq!(word_gen.maxlen, 9);
+        assert_eq!(word_gen.charsets.len(), 9);
+        assert_eq!(word_gen.min_word, "pwdAa2015".as_bytes());
+
+        assert_gen(word_gen, "upper-lower-year-1-4.txt");
     }
 
     fn assert_gen(w: WordGenerator, fname: &str) -> String {
@@ -279,12 +325,58 @@ mod tests {
 
     #[test]
     fn test_is_valid_mask() {
-        assert!(crate::is_valid_mask("?d?d?d?d"));
-        assert!(crate::is_valid_mask("?l?u?a?b?s"));
+        let valid_masks = vec![
+            "?d?d?d?d",
+            "?l?u?a?b?s",
+            "abc?l?u?a?b?sdef?1?2?3",
+            "?a?b\\?",
+        ];
+        for mask in valid_masks {
+            assert!(crate::is_valid_mask(mask));
+        }
 
-        assert!(!crate::is_valid_mask(""));
-        assert!(!crate::is_valid_mask("?"));
-        assert!(!crate::is_valid_mask("?x"));
+        let invalid_masks = vec!["", "?", "?x", "??", "?"];
+        for mask in invalid_masks {
+            assert!(!crate::is_valid_mask(mask));
+        }
+    }
+
+    #[test]
+    fn test_parse_mask() {
+        let valid_masks = vec![
+            (
+                "?d?d",
+                vec![MaskOp::BuiltinCharset('d'), MaskOp::BuiltinCharset('d')],
+            ),
+            (
+                "?l?u?a?b?s",
+                vec![
+                    MaskOp::BuiltinCharset('l'),
+                    MaskOp::BuiltinCharset('u'),
+                    MaskOp::BuiltinCharset('a'),
+                    MaskOp::BuiltinCharset('b'),
+                    MaskOp::BuiltinCharset('s'),
+                ],
+            ),
+            (
+                "a ?ld?1?2\\?a",
+                vec![
+                    MaskOp::Char('a'),
+                    MaskOp::Char(' '),
+                    MaskOp::BuiltinCharset('l'),
+                    MaskOp::Char('d'),
+                    MaskOp::CustomCharset(0),
+                    MaskOp::CustomCharset(1),
+                    MaskOp::Char('?'),
+                    MaskOp::Char('a'),
+                ],
+            ),
+        ];
+
+        for (mask, expected) in valid_masks {
+            let mask_ops = crate::parse_mask(mask).unwrap();
+            assert_eq!(mask_ops, expected);
+        }
     }
 
     fn wordlist_fname(fname: &str) -> path::PathBuf {

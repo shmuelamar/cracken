@@ -11,6 +11,9 @@ const EXAMPLE_USAGE: &str = r#"Example Usage:
   # all digits from 0 to 99999999
   cracken -m 1 ?d?d?d?d?d?d?d?d
 
+  # words with pwd prefix - pwd0000 to pwd9999
+  cracken pwd?d?d?d?d
+
   # all passwords of length 8 starting with upper then 6 lowers then digit
   cracken ?u?l?l?l?l?l?l?d
 
@@ -22,6 +25,9 @@ const EXAMPLE_USAGE: &str = r#"Example Usage:
 
   # 4 custom charsets - the order determines the id of the charset
   cracken -c="01" -c="ab" -c="de" -c="ef" "?1?2?3?4"
+
+  # 4 lowercase chars with years 2000-2019 suffix
+  cracken -c="01" "?l?l?l?l20?1?d"
 "#;
 
 fn parse_args(args: Option<Vec<&str>>) -> ArgMatches<'static> {
@@ -174,7 +180,7 @@ mod tests {
 
     #[test]
     fn test_run_custom_charset() {
-        let args = Some(vec!["cracken", "-c=abcdef0123456789", "?1?1?1?1"]);
+        let args = Some(vec!["cracken", "-c=abcdef0123456789", "?1"]);
         assert!(runner::run(args).is_ok());
     }
 
