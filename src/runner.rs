@@ -1,9 +1,11 @@
-use crate::{built_info, WordGenerator};
+use crate::{built_info, AGenerator, WordGenerator};
 use clap::{App, Arg, ArgMatches};
 use std::env;
 use std::fs::File;
 use std::io::{ErrorKind, Write};
 
+// TODO: add wordlist
+// TODO: add readme features section
 const EXAMPLE_USAGE: &str = r#"Example Usage:
   # all digits from 00000000 to 99999999
   cracken ?d?d?d?d?d?d?d?d
@@ -85,10 +87,20 @@ available masks are:
             .takes_value(false)
             .required(false),
     ).arg(
-        Arg::with_name("custom-charset") // TODO: add to examples
+        Arg::with_name("custom-charset")
             .short("c")
             .long("custom-charset")
             .help("custom charset (string of chars). up to 9 custom charsets - ?1 to ?9. use ?1 on the mask for the first charset")
+            .takes_value(true)
+            .required(false)
+            .multiple(true)
+            .max_values(9),
+    )
+    .arg(
+        Arg::with_name("wordlist")
+            .short("w")
+            .long("wordlist")
+            .help("filename containing newline (0xA) separated words")
             .takes_value(true)
             .required(false)
             .multiple(true)
@@ -142,13 +154,18 @@ pub fn run(args: Option<Vec<&str>>) -> Result<(), String> {
         .map(|x| x.collect())
         .unwrap_or_else(|| vec![]);
 
-    let word_generator = WordGenerator::new(&mask, minlen, maxlen, &custom_charsets)?;
+    let wordlists: Vec<&str> = args
+        .values_of("wordlist")
+        .map(|x| x.collect())
+        .unwrap_or_else(|| vec![]);
 
-    if args.is_present("stats") {
-        let combs = word_generator.combinations();
-        println!("{}", combs);
-        return Ok(());
-    }
+    //    let word_generator = WordGenerator::new(&mask, minlen, maxlen, &custom_charsets)?;
+    let word_generator = AGenerator::new(&mask, &wordlists, &custom_charsets)?;
+    //    if args.is_present("stats") {
+    //        let combs = word_generator.combinations();
+    //        println!("{}", combs);
+    //        return Ok(());
+    //    }
 
     match word_generator.gen(out) {
         Ok(_) => Ok(()),
