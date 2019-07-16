@@ -1,6 +1,6 @@
 [package]
 name = "cracken"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["shmuelamar"]
 edition = "2018"
 build = "build.rs"

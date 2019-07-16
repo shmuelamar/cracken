@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader, Seek, SeekFrom};
+use std::io::{BufRead, BufReader};
 use std::ops::Index;
 
 #[derive(Debug)]
@@ -7,6 +7,7 @@ pub struct Wordlist {
     words: Vec<Vec<u8>>,
 }
 
+// TODO: size + next
 impl Wordlist {
     pub fn from_file(fname: &str) -> std::io::Result<Wordlist> {
         let numlines = {
@@ -30,33 +31,19 @@ impl Wordlist {
                 Ok(())
             })
             .collect::<Result<(), std::io::Error>>()?;
-
-        //        loop {
-        //            let mut word = vec![];
-        //
-        //            match fp.read_until(b'\n', &mut word) {
-        //                Ok(0) => break,
-        //                Err(_) => break,
-        //                Ok(_) => {},
-        //            }
-        //
-        //            if word.is_empty() {
-        //                continue
-        //            }
-        //
-        //            if *word.last().unwrap() == b'\n' {
-        //                word.pop();
-        //            }
-        //            word.shrink_to_fit();
-        //            words.push(word);
-        //        }
         words.shrink_to_fit();
         words.sort_unstable_by(|a, b| a.len().cmp(&b.len()));
         Ok(Wordlist { words })
     }
 
+    #[inline]
     pub fn len(&self) -> usize {
         self.words.len()
+    }
+
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 }
 
@@ -71,8 +58,9 @@ impl Index<usize> for Wordlist {
 
 #[cfg(test)]
 mod tests {
-    use crate::wordlists::Wordlist;
     use std::path;
+
+    use super::Wordlist;
 
     #[test]
     fn test_wordlist_from_file() {

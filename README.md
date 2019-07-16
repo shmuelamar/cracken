@@ -151,7 +151,7 @@ Feel free to submit PRs and open issues.
 
 * [x] min/max word length
 * [x] custom charset
-* [ ] wordlist(s) as input
+* [x] wordlist(s) as input
 * [ ] input file of list of masks
 * [x] fixed chars
 * [x] number of total passwords to generate

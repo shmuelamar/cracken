@@ -1,8 +1,11 @@
-use crate::{built_info, AGenerator, WordGenerator};
-use clap::{App, Arg, ArgMatches};
 use std::env;
 use std::fs::File;
 use std::io::{ErrorKind, Write};
+
+use clap::{App, Arg, ArgMatches};
+
+use crate::built_info;
+use crate::generators::get_word_generator;
 
 // TODO: add wordlist
 // TODO: add readme features section
@@ -32,7 +35,18 @@ const EXAMPLE_USAGE: &str = r#"Example Usage:
   cracken -c="01" "?l?l?l?l20?1?d"
 "#;
 
-fn parse_args(args: Option<Vec<&str>>) -> ArgMatches<'static> {
+fn parse_args(args: Option<Vec<&str>>) -> Result<ArgMatches<'static>, String> {
+    let help_footer = format!(
+        "{}\n{}-v{} {}-{} compiler: {}\nmore info at: {}",
+        EXAMPLE_USAGE,
+        built_info::PKG_NAME,
+        built_info::PKG_VERSION,
+        built_info::CFG_OS,
+        built_info::CFG_TARGET_ARCH,
+        built_info::RUSTC_VERSION,
+        built_info::PKG_HOMEPAGE,
+    );
+
     let osargs: Vec<String>;
     let args = match args {
         Some(itr) => itr,
@@ -42,7 +56,7 @@ fn parse_args(args: Option<Vec<&str>>) -> ArgMatches<'static> {
         }
     };
 
-    App::new(format!(
+    let app = App::new(format!(
         "Cracken v{} - {}",
         built_info::PKG_VERSION,
         built_info::PKG_DESCRIPTION
@@ -52,12 +66,19 @@ fn parse_args(args: Option<Vec<&str>>) -> ArgMatches<'static> {
             .long_help(
                 r#"the wordlist mask to generate.
 available masks are:
+    builtin charsets:
     ?d - digits: "0123456789"
     ?l - lowercase: "abcdefghijklmnopqrstuvwxyz"
     ?u - uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     ?s - symbols: " !\"\#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
     ?a - all characters: "?d?l?u?s"
     ?b - all binary values: (0-255)
+
+    custom charsets ?1 to ?9:
+    ?1 - first custom charset specified by --charset=mychars
+
+    wordlists ?w1 to ?w9:
+    ?w1 - first wordlist specified by --wordlist=my-wordlist.txt
 "#,
             )
             .takes_value(true)
@@ -114,25 +135,22 @@ available masks are:
             .takes_value(true)
             .required(false),
     )
-    .after_help(
-        format!(
-            "{}\n{}-v{} {}-{} compiler: {}\nmore info at: {}",
-            EXAMPLE_USAGE,
-            built_info::PKG_NAME,
-            built_info::PKG_VERSION,
-            built_info::CFG_OS,
-            built_info::CFG_TARGET_ARCH,
-            built_info::RUSTC_VERSION,
-            built_info::PKG_HOMEPAGE,
-        )
-        .as_str(),
-    )
-    .get_matches_from(args)
+    .after_help(help_footer.as_str());
+    let matches = app.get_matches_from(args);
+
+    // TODO: remove
+    if matches.is_present("wordlist")
+        && (matches.is_present("min-length") || matches.is_present("max-length"))
+    {
+        return Err("--wordlist cannot be used with --maxlen or --minlen".to_string());
+    }
+
+    Ok(matches)
 }
 
 pub fn run(args: Option<Vec<&str>>) -> Result<(), String> {
     // parse args
-    let args = parse_args(args);
+    let args = parse_args(args)?;
     let mask = args.value_of("mask").unwrap();
 
     // TODO: result should fail on bad input not default value
@@ -159,13 +177,12 @@ pub fn run(args: Option<Vec<&str>>) -> Result<(), String> {
         .map(|x| x.collect())
         .unwrap_or_else(|| vec![]);
 
-    //    let word_generator = WordGenerator::new(&mask, minlen, maxlen, &custom_charsets)?;
-    let word_generator = AGenerator::new(&mask, &wordlists, &custom_charsets)?;
-    //    if args.is_present("stats") {
-    //        let combs = word_generator.combinations();
-    //        println!("{}", combs);
-    //        return Ok(());
-    //    }
+    let word_generator = get_word_generator(&mask, minlen, maxlen, &custom_charsets, &wordlists)?;
+    if args.is_present("stats") {
+        let combs = word_generator.combinations();
+        println!("{}", combs);
+        return Ok(());
+    }
 
     match word_generator.gen(out) {
         Ok(_) => Ok(()),
