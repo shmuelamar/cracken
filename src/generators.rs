@@ -5,7 +5,7 @@ use std::rc::Rc;
 use crate::charsets::Charset;
 use crate::mask::{parse_mask, MaskOp};
 use crate::stackbuf::StackBuf;
-use crate::wordlists::Wordlist;
+use crate::wordlists::{Wordlist, WordlistIterator};
 use crate::MAX_WORD_SIZE;
 
 pub trait WordGenerator {
@@ -41,7 +41,7 @@ enum Position<'a> {
     },
     WordlistPos {
         wordlist: &'a Rc<Wordlist>,
-        idx: usize,
+        idx: WordlistIterator<'a>,
     },
 }
 
@@ -221,15 +221,20 @@ impl<'a> WordlistGenerator<'a> {
                     charset,
                     chr: charset.min_char,
                 },
-                WordlistItem::Wordlist(wordlist) => Position::WordlistPos { wordlist, idx: 0 },
+                WordlistItem::Wordlist(wordlist) => Position::WordlistPos {
+                    wordlist,
+                    idx: wordlist.iter(),
+                },
             })
             .collect();
 
         let mut min_word = vec![];
-        for pos in positions.iter() {
+        for pos in positions.iter_mut() {
             match pos {
                 Position::CharsetPos { chr, .. } => min_word.push(*chr),
-                Position::WordlistPos { wordlist, .. } => min_word.extend_from_slice(&wordlist[0]),
+                Position::WordlistPos { idx, .. } => {
+                    min_word.extend_from_slice(idx.next().unwrap())
+                }
             }
         }
         min_word.push(b'\n');
@@ -265,17 +270,27 @@ impl<'a> WordlistGenerator<'a> {
                         pos -= 1;
                     }
                     Position::WordlistPos { wordlist, idx } => {
-                        let prev_len = wordlist[*idx].len();
-                        *idx += 1;
-                        if *idx == wordlist.len() {
-                            *idx = 0;
-                        }
+                        let finished;
+                        let prev_len = idx.current_len();
+                        let wordlist_word = match idx.next() {
+                            Some(w) => {
+                                finished = false;
+                                w
+                            }
+                            // FIXME: verify
+                            None => {
+                                *idx = wordlist.iter();
+                                finished = true;
+                                idx.next().unwrap()
+                            }
+                        };
 
-                        let wlen = wordlist[*idx].len();
+                        // FIXME: remove
+                        let wlen = wordlist_word.len();
 
                         // TODO: try simplify this routine
                         if prev_len == wlen {
-                            word[pos + 1 - wlen..=pos].copy_from_slice(&wordlist[*idx]);
+                            word[pos + 1 - wlen..=pos].copy_from_slice(&wordlist_word);
                             if pos >= wlen {
                                 pos -= wlen;
                             } else {
@@ -296,7 +311,7 @@ impl<'a> WordlistGenerator<'a> {
                             word_len = (word_len as isize + offset) as usize;
 
                             // copy the next word (similar to prev_len == wlen block)
-                            word[pos + 1 - wlen..=pos].copy_from_slice(&wordlist[*idx]);
+                            word[pos + 1 - wlen..=pos].copy_from_slice(wordlist_word);
                             if pos >= wlen {
                                 pos -= wlen;
                             } else {
@@ -305,7 +320,7 @@ impl<'a> WordlistGenerator<'a> {
                         }
 
                         // if idx == 0 we finished the wordlist
-                        if *idx > 0 {
+                        if !finished {
                             continue 'outer_loop;
                         }
                     }
@@ -445,6 +460,9 @@ mod tests {
         let result = String::from_utf8(buf).unwrap();
         let expected = fs::read_to_string(wordlist_fname(fname)).unwrap();
 
+        let mut s2 = fname.to_string();
+        s2.push_str("_expected.txt");
+        fs::write(wordlist_fname(&s2), &result).unwrap();
         assert_eq!(result, expected);
         result
     }
