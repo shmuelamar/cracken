@@ -7,9 +7,8 @@ use clap::{App, Arg, ArgMatches};
 use crate::built_info;
 use crate::generators::get_word_generator;
 
-// TODO: add wordlist
-// TODO: add readme features section
 const EXAMPLE_USAGE: &str = r#"Example Usage:
+
   # all digits from 00000000 to 99999999
   cracken ?d?d?d?d?d?d?d?d
 
@@ -26,27 +25,25 @@ const EXAMPLE_USAGE: &str = r#"Example Usage:
   cracken -o pwds.txt ?u?l?l?l?l?l?l?d
 
   # custom charset - all hex values
-  cracken -c="0123456789abcdef" "?1?1?1?1"
+  cracken -c "0123456789abcdef" "?1?1?1?1"
 
   # 4 custom charsets - the order determines the id of the charset
-  cracken -c="01" -c="ab" -c="de" -c="ef" "?1?2?3?4"
+  cracken -c "01" -c="ab" -c="de" -c="ef" "?1?2?3?4"
 
   # 4 lowercase chars with years 2000-2019 suffix
-  cracken -c="01" "?l?l?l?l20?1?d"
+  cracken -c "01" "?l?l?l?l20?1?d"
+
+  # starts with firstname from wordlist followed by 4 digits
+  cracken -w "firstnames.txt" "?w1?d?d?d?d"
+
+  # starts with firstname from wordlist with lastname from wordlist ending with symbol
+  cracken -w "firstnames.txt" -w "lastnames.txt" -c "!@#$" "?w1?w2?1"
+
+  # repeating wordlists multiple times and combining charsets
+  cracken -w "verbs.txt" -w "nouns.txt" "?w1?w2?w1?w2?w2?d?d?d"
 "#;
 
-fn parse_args(args: Option<Vec<&str>>) -> Result<ArgMatches<'static>, String> {
-    let help_footer = format!(
-        "{}\n{}-v{} {}-{} compiler: {}\nmore info at: {}",
-        EXAMPLE_USAGE,
-        built_info::PKG_NAME,
-        built_info::PKG_VERSION,
-        built_info::CFG_OS,
-        built_info::CFG_TARGET_ARCH,
-        built_info::RUSTC_VERSION,
-        built_info::PKG_HOMEPAGE,
-    );
-
+fn parse_args(args: Option<Vec<&str>>) -> ArgMatches<'static> {
     let osargs: Vec<String>;
     let args = match args {
         Some(itr) => itr,
@@ -56,7 +53,7 @@ fn parse_args(args: Option<Vec<&str>>) -> Result<ArgMatches<'static>, String> {
         }
     };
 
-    let app = App::new(format!(
+    App::new(format!(
         "Cracken v{} - {}",
         built_info::PKG_VERSION,
         built_info::PKG_DESCRIPTION
@@ -75,10 +72,10 @@ available masks are:
     ?b - all binary values: (0-255)
 
     custom charsets ?1 to ?9:
-    ?1 - first custom charset specified by --charset=mychars
+    ?1 - first custom charset specified by --charset 'mychars'
 
     wordlists ?w1 to ?w9:
-    ?w1 - first wordlist specified by --wordlist=my-wordlist.txt
+    ?w1 - first wordlist specified by --wordlist 'my-wordlist.txt'
 "#,
             )
             .takes_value(true)
@@ -115,16 +112,18 @@ available masks are:
             .takes_value(true)
             .required(false)
             .multiple(true)
+            .number_of_values(1)
             .max_values(9),
     )
     .arg(
         Arg::with_name("wordlist")
             .short("w")
             .long("wordlist")
-            .help("filename containing newline (0xA) separated words")
+            .help("filename containing newline (0xA) separated words. note: currently all wordlists loaded to memory")
             .takes_value(true)
             .required(false)
             .multiple(true)
+            .number_of_values(1)
             .max_values(9),
     )
     .arg(
@@ -135,22 +134,25 @@ available masks are:
             .takes_value(true)
             .required(false),
     )
-    .after_help(help_footer.as_str());
-    let matches = app.get_matches_from(args);
-
-    // TODO: remove
-    if matches.is_present("wordlist")
-        && (matches.is_present("min-length") || matches.is_present("max-length"))
-    {
-        return Err("--wordlist cannot be used with --maxlen or --minlen".to_string());
-    }
-
-    Ok(matches)
+    .after_help(
+        format!(
+            "{}\n{}-v{} {}-{} compiler: {}\nmore info at: {}",
+            EXAMPLE_USAGE,
+            built_info::PKG_NAME,
+            built_info::PKG_VERSION,
+            built_info::CFG_OS,
+            built_info::CFG_TARGET_ARCH,
+            built_info::RUSTC_VERSION,
+            built_info::PKG_HOMEPAGE,
+        )
+        .as_str(),
+    )
+    .get_matches_from(args)
 }
 
 pub fn run(args: Option<Vec<&str>>) -> Result<(), String> {
     // parse args
-    let args = parse_args(args)?;
+    let args = parse_args(args);
     let mask = args.value_of("mask").unwrap();
 
     // TODO: result should fail on bad input not default value

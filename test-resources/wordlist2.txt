@@ -1,0 +1,12 @@
+rust
+python
+java
+c
+c++
+javascript
+html
+css
+asm
+ruby
+perl
+brainfuck

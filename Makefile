@@ -28,12 +28,23 @@ test: validate
 test-release: release
 	rm -rf ./tmp/*
 	mkdir -p ./tmp
+
+	@echo "testing mask with minlen and maxlen"
 	cd ./tmp && \
 		cp "../build/${RELEASE_TARBALL}" . && \
 		tar xzvf "../build/${RELEASE_TARBALL}" && \
 		./cracken --help && \
 		time ./cracken -m 1 -x 4 -o './cracken-${STARTDATE}.txt' '?u?l?u?l' && \
 		cmp ../test-resources/upper-lower-1-4.txt './cracken-${STARTDATE}.txt'
+
+	@echo "testing mask with wordlists and custom charsets"
+	cd ./tmp && \
+		time ./cracken -c '#!@' \
+			-w ../test-resources/wordlist1.txt \
+			-w ../test-resources/wordlist2.txt \
+			-o './cracken-${STARTDATE}-wl.txt' \
+			'?w1?d?w2?l?w1?1' && \
+		cmp ../test-resources/wordlists-mix.txt './cracken-${STARTDATE}-wl.txt'
 	rm -rf ./tmp/*
 
 bench:
@@ -42,7 +53,7 @@ bench:
 coverage:
 	cargo tarpaulin -o Html
 
-ci: test test-release build-crate coverage
+ci: test test-release coverage build-crate
 
 fmt:
 	cargo fmt

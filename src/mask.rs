@@ -105,7 +105,7 @@ mod tests {
                 ],
             ),
             (
-                "a ?ld?1?2\\?a",
+                "a ?ld?1?2?w2b\\?a?w1",
                 vec![
                     MaskOp::Char('a'),
                     MaskOp::Char(' '),
@@ -113,8 +113,11 @@ mod tests {
                     MaskOp::Char('d'),
                     MaskOp::CustomCharset(0),
                     MaskOp::CustomCharset(1),
+                    MaskOp::Wordlist(1),
+                    MaskOp::Char('b'),
                     MaskOp::Char('?'),
                     MaskOp::Char('a'),
+                    MaskOp::Wordlist(0),
                 ],
             ),
         ];

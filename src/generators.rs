@@ -258,8 +258,8 @@ impl<'a> WordlistGenerator<'a> {
                             continue 'outer_loop;
                         }
 
-                        // TODO: this is because test has overflow check
-                        if pos == 0 {
+                        // on debug build we have overflow checks
+                        if cfg!(debug_assertions) && pos == 0 {
                             break 'outer_loop;
                         }
                         pos -= 1;
@@ -336,13 +336,14 @@ impl<'a> WordGenerator for WordlistGenerator<'a> {
                 WordlistItem::Wordlist(wl) => wl.len() as u64,
                 WordlistItem::Charset(c) => c.chars.len() as u64,
             })
-            .sum()
+            .product()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::{CharsetGenerator, WordGenerator};
+    use crate::generators::get_word_generator;
     use std::fs;
     use std::io::Cursor;
     use std::path;
@@ -358,7 +359,7 @@ mod tests {
         assert_eq!(word_gen.charsets.len(), 1);
         assert_eq!(word_gen.min_word, "0".as_bytes());
 
-        let res = assert_gen(word_gen, "single-digits.txt");
+        let res = assert_gen(Box::new(word_gen), "single-digits.txt");
 
         // paranoid test of assert_gen
         assert_eq!(res, "0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n");
@@ -375,7 +376,7 @@ mod tests {
         assert_eq!(word_gen.charsets.len(), 4);
         assert_eq!(word_gen.min_word, "AaAa".as_bytes());
 
-        assert_gen(word_gen, "upper-lower-1-4.txt");
+        assert_gen(Box::new(word_gen), "upper-lower-1-4.txt");
     }
 
     #[test]
@@ -389,10 +390,54 @@ mod tests {
         assert_eq!(word_gen.charsets.len(), 9);
         assert_eq!(word_gen.min_word, "pwdAa2015".as_bytes());
 
-        assert_gen(word_gen, "upper-lower-year-1-4.txt");
+        assert_gen(Box::new(word_gen), "upper-lower-year-1-4.txt");
     }
 
-    fn assert_gen(w: CharsetGenerator, fname: &str) -> String {
+    #[test]
+    fn test_get_word_generator_charset() {
+        let mask = "?d?d?d?d";
+        let word_gen =
+            get_word_generator(mask, Some(4), None, vec![].as_ref(), vec![].as_ref()).unwrap();
+        assert_eq!(word_gen.combinations(), 10000);
+    }
+
+    #[test]
+    fn test_get_word_generator_wordlist() {
+        let mask = "?d?d?d?d?w1";
+        let wordlist_fname = wordlist_fname("wordlist1.txt");
+        let wordlists = vec![wordlist_fname.to_str().unwrap()];
+        let word_gen =
+            get_word_generator(mask, None, None, vec![].as_ref(), wordlists.as_ref()).unwrap();
+        assert_eq!(word_gen.combinations(), 100000);
+    }
+
+    #[test]
+    fn test_word_generator_wordlist_simple() {
+        let mask = "?w1";
+        let wordlist1 = wordlist_fname("wordlist1.txt");
+        let wordlists = vec![wordlist1.to_str().unwrap()];
+        let word_gen =
+            get_word_generator(mask, None, None, vec![].as_ref(), wordlists.as_ref()).unwrap();
+
+        assert_eq!(word_gen.combinations(), 10);
+        assert_gen(word_gen, "wordlist-simple.txt");
+    }
+
+    #[test]
+    fn test_word_generator_wordlist_and_custom_charset() {
+        let mask = "?w1?d?w2?l?w1?1";
+        let wordlist1 = wordlist_fname("wordlist1.txt");
+        let wordlist2 = wordlist_fname("wordlist2.txt");
+        let charsets = vec!["!@#"];
+        let wordlists = vec![wordlist1.to_str().unwrap(), wordlist2.to_str().unwrap()];
+        let word_gen =
+            get_word_generator(mask, None, None, charsets.as_ref(), wordlists.as_ref()).unwrap();
+
+        assert_eq!(word_gen.combinations(), 10 * 10 * 12 * 26 * 10 * 3);
+        assert_gen(word_gen, "wordlists-mix.txt");
+    }
+
+    fn assert_gen<'a>(w: Box<dyn WordGenerator + 'a>, fname: &str) -> String {
         let mut buf: Vec<u8> = Vec::new();
         let mut cur = Cursor::new(&mut buf);
         w.gen(Some(Box::new(&mut cur))).unwrap();

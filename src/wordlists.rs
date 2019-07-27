@@ -7,7 +7,7 @@ pub struct Wordlist {
     words: Vec<Vec<u8>>,
 }
 
-// TODO: size + next
+// FIXME: size + next
 impl Wordlist {
     pub fn from_file(fname: &str) -> std::io::Result<Wordlist> {
         let numlines = {
