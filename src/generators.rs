@@ -277,7 +277,6 @@ impl<'a> WordlistGenerator<'a> {
                                 finished = false;
                                 w
                             }
-                            // FIXME: verify
                             None => {
                                 *idx = wordlist.iter();
                                 finished = true;
@@ -285,41 +284,30 @@ impl<'a> WordlistGenerator<'a> {
                             }
                         };
 
-                        // FIXME: remove
                         let wlen = wordlist_word.len();
 
-                        // TODO: try simplify this routine
-                        if prev_len == wlen {
-                            word[pos + 1 - wlen..=pos].copy_from_slice(&wordlist_word);
-                            if pos >= wlen {
-                                pos -= wlen;
-                            } else {
-                                pos = 0;
-                            }
-                        } else {
+                        // move the suffix by offset (can be negative)
+                        if prev_len != wlen {
                             let offset = wlen as isize - prev_len as isize;
 
-                            // move the suffix by offset (can be negative)
-                            let after_word = pos + 1;
-                            let tmp = word[after_word..word_len].to_vec();
-                            word[(after_word as isize + offset) as usize
-                                ..(word_len as isize + offset) as usize]
-                                .copy_from_slice(&tmp);
+                            // copy by offset
+                            for i in (pos + 1..word_len).rev() {
+                                word[(i as isize + offset) as usize] = word[i];
+                            }
 
                             // update current position & wordlien by offset
                             pos = (pos as isize + offset) as usize;
                             word_len = (word_len as isize + offset) as usize;
-
-                            // copy the next word (similar to prev_len == wlen block)
-                            word[pos + 1 - wlen..=pos].copy_from_slice(wordlist_word);
-                            if pos >= wlen {
-                                pos -= wlen;
-                            } else {
-                                pos = 0;
-                            }
                         }
 
-                        // if idx == 0 we finished the wordlist
+                        word[pos + 1 - wlen..=pos].copy_from_slice(&wordlist_word);
+                        // on debug build we have overflow checks
+                        if cfg!(debug_assertions) && pos < wlen {
+                            pos = 0;
+                        } else {
+                            pos -= wlen;
+                        }
+
                         if !finished {
                             continue 'outer_loop;
                         }

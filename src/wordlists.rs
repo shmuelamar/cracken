@@ -14,6 +14,12 @@ pub struct Wordlist {
     words_bufs: Vec<WordsBuf>,
 }
 
+pub struct WordlistIterator<'a> {
+    wordlist: &'a Wordlist,
+    wordbuf_pos: usize,
+    word_pos: usize,
+}
+
 impl Wordlist {
     pub fn from_file(fname: &str) -> std::io::Result<Wordlist> {
         let fp = BufReader::new(File::open(fname)?);
@@ -72,12 +78,6 @@ impl Wordlist {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
-}
-
-pub struct WordlistIterator<'a> {
-    wordlist: &'a Wordlist,
-    wordbuf_pos: usize,
-    word_pos: usize,
 }
 
 impl<'a> Iterator for WordlistIterator<'a> {
