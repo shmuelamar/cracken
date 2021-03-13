@@ -32,7 +32,7 @@ As of writing this, Cracken is probably the world's fastest wordlist generator:
 
 ![bechmarks results](./benchmarks/bench-results.png)
 
-Cracken has around 20% increased performance over hashcat's fast (and awesome) [maskprocessor][mp] thats written in C.
+Cracken has around 20% increased performance over hashcat's fast [maskprocessor][mp] thats written in C.
 
 Cracken can generate around 1.5 GiB/s per core.
 
@@ -46,8 +46,8 @@ When the wordlist generator produces less words per second than the cracking too
 
 * [x] super fast wordlist generator
 * [x] fully compatible with maskprocessor mask syntax
-* [x] custom charsets
 * [x] wordlists as input
+* [x] custom charsets
 * [x] fixed chars at any position
 * [x] min/max word lengths
 * [x] combinations - calculates number of total passwords from the mask
@@ -212,7 +212,7 @@ Feel free to submit PRs and open issues.
 
 * [ ] input file of list of masks
 * [ ] stderr status tracker thread
-* [ ] dont load large wordlists to memory (use from disk / mmap)
+* [ ] wordlists load modes (currently all in memory) - add from disk / mmap
 * [ ] multithreading
 * [ ] compression
 
