@@ -16,5 +16,5 @@ pub mod built_info {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));
 }
 
-const BUFFER_SIZE: usize = 4096;
-pub const MAX_WORD_SIZE: usize = 128;
+const BUFFER_SIZE: usize = 8192;
+pub const MAX_WORD_SIZE: usize = 256;

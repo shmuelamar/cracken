@@ -169,6 +169,7 @@ pub fn run(args: Option<Vec<&str>>) -> Result<(), String> {
         None => None,
     };
 
+    // TODO: check len(custom-charset) < max(mask). index error on mask
     let custom_charsets: Vec<&str> = args
         .values_of("custom-charset")
         .map(|x| x.collect())
