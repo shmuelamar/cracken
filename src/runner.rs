@@ -173,12 +173,12 @@ pub fn run(args: Option<Vec<&str>>) -> Result<(), String> {
     let custom_charsets: Vec<&str> = args
         .values_of("custom-charset")
         .map(|x| x.collect())
-        .unwrap_or_else(|| vec![]);
+        .unwrap_or_else(Vec::new);
 
     let wordlists: Vec<&str> = args
         .values_of("wordlist")
         .map(|x| x.collect())
-        .unwrap_or_else(|| vec![]);
+        .unwrap_or_else(Vec::new);
 
     let word_generator = get_word_generator(&mask, minlen, maxlen, &custom_charsets, &wordlists)?;
     if args.is_present("stats") {

@@ -27,7 +27,7 @@ impl Wordlist {
         let mut len2words = HashMap::new();
 
         fp.split(b'\n')
-            .map(|word| {
+            .try_for_each::<_, Result<(), std::io::Error>>(|word| {
                 let mut word = word?;
                 if !word.is_empty() {
                     if word.last() == Some(&b'\n') {
@@ -41,8 +41,7 @@ impl Wordlist {
                     lenvec.reserve_exact(word.len() * 1024 * 1024);
                 }
                 Ok(())
-            })
-            .collect::<Result<(), std::io::Error>>()?;
+            })?;
 
         len2words
             .iter_mut()
