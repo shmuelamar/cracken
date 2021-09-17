@@ -1,6 +1,6 @@
 SHELL := $(shell which bash)
 STARTDATE := $(shell date -u +'%Y-%m-%dT%H-%M-%S')
-PROJECT_VERSION := 0.1.0
+PROJECT_VERSION := $(shell grep -oE 'version = ".*"' Cargo.toml -m 1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
 RELEASE_TARBALL = ./cracken-v${PROJECT_VERSION}.tar.gz
 GPG_SIGN_KEY = 647290A426CF53EF
 
