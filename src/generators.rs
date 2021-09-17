@@ -94,8 +94,6 @@ impl<'a> CharsetGenerator<'a> {
                 max_custom_charset + 1,
                 custom_charsets.len()
             ));
-        } else {
-            println!("AAAAAAAAAAAA {}", max_custom_charset);
         }
 
         let charsets: Vec<_> = mask_ops
