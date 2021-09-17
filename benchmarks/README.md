@@ -42,7 +42,7 @@ jump table array for lower alpha looks like this:
 
 whenever `next_char <= char` we reached the last char on the charset.
 
-for more details see `impl WordGenerator` on the source.
+for more details see `src/generators.rs:CharsetGenerator` on the source.
 
 **other optimizations:**
 

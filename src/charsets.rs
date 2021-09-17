@@ -92,7 +92,7 @@ impl Charset {
 
         // ensure chars are sorted so jmp_table works correctly
         let mut chars = chars.to_owned();
-        chars.sort();
+        chars.sort_unstable();
         for i in 0..chars.len() {
             jmp_table[chars[i] as usize] = chars[(i + 1) % chars.len()];
         }

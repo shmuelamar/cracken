@@ -1,10 +1,14 @@
-use crate::{built_info, WordGenerator};
-use clap::{App, Arg, ArgMatches};
 use std::env;
 use std::fs::File;
 use std::io::{ErrorKind, Write};
 
+use clap::{App, Arg, ArgMatches};
+
+use crate::built_info;
+use crate::generators::get_word_generator;
+
 const EXAMPLE_USAGE: &str = r#"Example Usage:
+
   # all digits from 00000000 to 99999999
   cracken ?d?d?d?d?d?d?d?d
 
@@ -21,13 +25,22 @@ const EXAMPLE_USAGE: &str = r#"Example Usage:
   cracken -o pwds.txt ?u?l?l?l?l?l?l?d
 
   # custom charset - all hex values
-  cracken -c="0123456789abcdef" "?1?1?1?1"
+  cracken -c "0123456789abcdef" "?1?1?1?1"
 
   # 4 custom charsets - the order determines the id of the charset
-  cracken -c="01" -c="ab" -c="de" -c="ef" "?1?2?3?4"
+  cracken -c "01" -c="ab" -c="de" -c="ef" "?1?2?3?4"
 
   # 4 lowercase chars with years 2000-2019 suffix
-  cracken -c="01" "?l?l?l?l20?1?d"
+  cracken -c "01" "?l?l?l?l20?1?d"
+
+  # starts with firstname from wordlist followed by 4 digits
+  cracken -w "firstnames.txt" "?w1?d?d?d?d"
+
+  # starts with firstname from wordlist with lastname from wordlist ending with symbol
+  cracken -w "firstnames.txt" -w "lastnames.txt" -c "!@#$" "?w1?w2?1"
+
+  # repeating wordlists multiple times and combining charsets
+  cracken -w "verbs.txt" -w "nouns.txt" "?w1?w2?w1?w2?w2?d?d?d"
 "#;
 
 fn parse_args(args: Option<Vec<&str>>) -> ArgMatches<'static> {
@@ -50,12 +63,19 @@ fn parse_args(args: Option<Vec<&str>>) -> ArgMatches<'static> {
             .long_help(
                 r#"the wordlist mask to generate.
 available masks are:
+    builtin charsets:
     ?d - digits: "0123456789"
     ?l - lowercase: "abcdefghijklmnopqrstuvwxyz"
     ?u - uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     ?s - symbols: " !\"\#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
     ?a - all characters: "?d?l?u?s"
     ?b - all binary values: (0-255)
+
+    custom charsets ?1 to ?9:
+    ?1 - first custom charset specified by --charset 'mychars'
+
+    wordlists ?w1 to ?w9:
+    ?w1 - first wordlist specified by --wordlist 'my-wordlist.txt'
 "#,
             )
             .takes_value(true)
@@ -85,13 +105,25 @@ available masks are:
             .takes_value(false)
             .required(false),
     ).arg(
-        Arg::with_name("custom-charset") // TODO: add to examples
+        Arg::with_name("custom-charset")
             .short("c")
             .long("custom-charset")
             .help("custom charset (string of chars). up to 9 custom charsets - ?1 to ?9. use ?1 on the mask for the first charset")
             .takes_value(true)
             .required(false)
             .multiple(true)
+            .number_of_values(1)
+            .max_values(9),
+    )
+    .arg(
+        Arg::with_name("wordlist")
+            .short("w")
+            .long("wordlist")
+            .help("filename containing newline (0xA) separated words. note: currently all wordlists loaded to memory")
+            .takes_value(true)
+            .required(false)
+            .multiple(true)
+            .number_of_values(1)
             .max_values(9),
     )
     .arg(
@@ -137,13 +169,18 @@ pub fn run(args: Option<Vec<&str>>) -> Result<(), String> {
         None => None,
     };
 
+    // TODO: check len(custom-charset) < max(mask). index error on mask
     let custom_charsets: Vec<&str> = args
         .values_of("custom-charset")
         .map(|x| x.collect())
-        .unwrap_or_else(|| vec![]);
+        .unwrap_or_else(Vec::new);
 
-    let word_generator = WordGenerator::new(&mask, minlen, maxlen, &custom_charsets)?;
+    let wordlists: Vec<&str> = args
+        .values_of("wordlist")
+        .map(|x| x.collect())
+        .unwrap_or_else(Vec::new);
 
+    let word_generator = get_word_generator(mask, minlen, maxlen, &custom_charsets, &wordlists)?;
     if args.is_present("stats") {
         let combs = word_generator.combinations();
         println!("{}", combs);
