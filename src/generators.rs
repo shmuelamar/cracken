@@ -52,7 +52,7 @@ pub fn get_word_generator<'a>(
     maxlen: Option<usize>,
     custom_charsets: &[&'a str],
     wordlists_fnames: &[&'a str],
-) -> Result<Box<dyn WordGenerator + 'a>, &'static str> {
+) -> Result<Box<dyn WordGenerator + 'a>, String> {
     if wordlists_fnames.is_empty() {
         Ok(Box::new(CharsetGenerator::new(
             mask,
@@ -61,7 +61,7 @@ pub fn get_word_generator<'a>(
             custom_charsets,
         )?))
     } else if minlen.is_some() || maxlen.is_some() {
-        Err("cannot set minlen or maxlen with wordlists")
+        Err("cannot set minlen or maxlen with wordlists".to_owned())
     } else {
         Ok(Box::new(WordlistGenerator::new(
             mask,
@@ -77,10 +77,27 @@ impl<'a> CharsetGenerator<'a> {
         minlen: Option<usize>,
         maxlen: Option<usize>,
         custom_charsets: &[&'a str],
-    ) -> Result<CharsetGenerator<'a>, &'static str> {
+    ) -> Result<CharsetGenerator<'a>, String> {
         let mask_ops = parse_mask(mask)?;
 
-        // TODO: return error from custom_charset not in index & invalid symbol
+        let mut max_custom_charset = -1;
+        for op in &mask_ops {
+            if let MaskOp::CustomCharset(idx) = op {
+                max_custom_charset = max_custom_charset.max(idx.to_owned() as isize)
+            }
+        }
+
+        // validate custom charset
+        if max_custom_charset >= custom_charsets.len() as isize {
+            return Err(format!(
+                "mask contains ?{} charset but only {} custom charsets defined",
+                max_custom_charset + 1,
+                custom_charsets.len()
+            ));
+        } else {
+            println!("AAAAAAAAAAAA {}", max_custom_charset);
+        }
+
         let charsets: Vec<_> = mask_ops
             .into_iter()
             .map(|op| match op {
@@ -97,10 +114,10 @@ impl<'a> CharsetGenerator<'a> {
 
         // validate minlen
         if !(0 < minlen && minlen <= maxlen && minlen <= charsets.len()) {
-            return Err("minlen is invalid");
+            return Err("minlen is invalid".to_owned());
         }
         if maxlen > charsets.len() {
-            return Err("maxlen is invalid");
+            return Err("maxlen is invalid".to_owned());
         }
 
         // prepare min word - the longest first word
@@ -397,6 +414,16 @@ mod tests {
     }
 
     #[test]
+    fn test_invalid_custom_charset() {
+        let result = CharsetGenerator::new("?1", None, None, &vec![]);
+
+        assert_eq!(
+            result.err(),
+            Some("mask contains ?1 charset but only 0 custom charsets defined".to_owned()),
+        );
+    }
+
+    #[test]
     fn test_get_word_generator_charset() {
         let mask = "?d?d?d?d";
         let word_gen =
@@ -448,7 +475,7 @@ mod tests {
         let result = String::from_utf8(buf).unwrap();
         let expected = fs::read_to_string(wordlist_fname(fname)).unwrap();
 
-        let mut s2 = fname.to_string();
+        let mut s2 = fname.to_owned();
         s2.push_str("_expected.txt");
         fs::write(wordlist_fname(&s2), &result).unwrap();
         assert_eq!(result, expected);
