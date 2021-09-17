@@ -4,19 +4,21 @@ import os
 import sys
 import time
 
+import pandas as pd
+
 
 def bench_cracken_cmd(mask, minlen, maxlen):
-    return './cracken -m {} -x {} {}'.format(minlen, maxlen, mask)
+    return './tools/cracken -m {} -x {} {}'.format(minlen, maxlen, mask)
 
 
 def bench_mp_cmd(mask, minlen, maxlen):
-    return './mp64.bin -i {}:{} {}'.format(minlen, maxlen, mask)
+    return './tools/mp64.bin -i {}:{} {}'.format(minlen, maxlen, mask)
 
 
 def bench_crunch_cmd(mask, minlen, maxlen):
     # crunch uses different mask pattern
     mask = mask.replace('?d', '%').replace('?u', ',').replace('?l', '@')
-    return './crunch {} {} -t {}'.format(minlen, maxlen, mask)
+    return './tools/crunch {} {} -t {}'.format(minlen, maxlen, mask)
 
 
 TOOLS = (
@@ -61,14 +63,28 @@ def main():
                     bench['ok'] = False
                     break
                 else:
-                    bench.update({
-                        'ok': True,
-                        'took': took,
-                    })
+                    bench.update(
+                        {
+                            'ok': True,
+                            'took': took,
+                        }
+                    )
                 iters_took += took
+                iter += 1
 
-    with open('results.json', 'w') as fp:
+    with open('bench_results_detailed.json', 'w') as fp:
         json.dump(benchmarks, fp, indent=4, sort_keys=True)
+
+    with open('bench_results.json', 'w') as fp:
+        df = pd.DataFrame(benchmarks)
+        df.sort_values(['bench', 'tool'])
+        df = (
+            df[df['ok']]
+            .groupby(['bench', 'tool'])
+            .agg(['mean', 'std', 'max', 'min'])['took']
+        )
+        results_data = df.reset_index().to_dict(orient='records')
+        json.dump(results_data, fp, indent=4, sort_keys=True)
 
 
 if __name__ == '__main__':

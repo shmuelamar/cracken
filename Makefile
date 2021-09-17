@@ -47,13 +47,16 @@ test-release: release
 		cmp ../test-resources/wordlists-mix.txt './cracken-${STARTDATE}-wl.txt'
 	rm -rf ./tmp/*
 
+print-release-version:
+	./build/cracken --help | grep cracken-v
+
 bench:
 	cargo bench
 
 coverage:
 	cargo tarpaulin -o Html
 
-ci: test test-release coverage build-crate
+ci: test test-release coverage build-crate print-release-version
 
 fmt:
 	cargo fmt

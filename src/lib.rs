@@ -17,4 +17,4 @@ pub mod built_info {
 }
 
 const BUFFER_SIZE: usize = 8192;
-pub const MAX_WORD_SIZE: usize = 256;
+pub const MAX_WORD_SIZE: usize = 128;

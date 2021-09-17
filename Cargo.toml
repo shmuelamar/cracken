@@ -1,6 +1,6 @@
 [package]
 name = "cracken"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["shmuelamar"]
 edition = "2018"
 build = "build.rs"
@@ -42,6 +42,7 @@ codegen-units = 1
 clap = { version = "~2.33.0", features = [ "suggestions", "color" , "wrap_help"] }
 regex = "~1"
 lazy_static = "~1.4.0"
+num-bigint = "~0.4.0"
 
 [dev-dependencies]
 criterion = "~0.3.4"
