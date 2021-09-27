@@ -1,6 +1,8 @@
 # Cracken
-[![cracken crate](https://img.shields.io/crates/v/cracken.svg)](https://crates.io/crates/cracken)
-[![cracken version](https://img.shields.io/crates/l/cracken.svg)](https://crates.io/crates/cracken)
+[![cracken crate](https://img.shields.io/crates/v/cracken)](https://crates.io/crates/cracken)
+[![cracken version](https://img.shields.io/crates/l/cracken)](https://crates.io/crates/cracken)
+[![cracken documentation](https://img.shields.io/docsrs/cracken)](https://docs.rs/cracken)
+[![cracken total downloads](https://img.shields.io/crates/d/cracken)](https://crates.io/crates/cracken)
 
 Cracken is a fast password wordlist generator written in pure safe Rust. Inspired by great tools like [maskprocessor][mp] and [Crunch][crunch].
 
