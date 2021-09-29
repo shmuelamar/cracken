@@ -7,6 +7,7 @@ extern crate regex;
 pub mod charsets;
 pub mod generators;
 pub mod mask;
+mod password_entropy;
 pub mod runner;
 pub mod stackbuf;
 pub mod wordlists;

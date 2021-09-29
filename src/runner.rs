@@ -4,8 +4,8 @@ use std::io::{ErrorKind, Write};
 
 use clap::{App, Arg, ArgMatches};
 
-use crate::built_info;
 use crate::generators::get_word_generator;
+use crate::{built_info, password_entropy};
 
 const EXAMPLE_USAGE: &str = r#"Example Usage:
 
@@ -133,6 +133,13 @@ available masks are:
             .help("output file to write the wordlist to, defaults to stdout")
             .takes_value(true)
             .required(false),
+    ).arg(
+        Arg::with_name("entropy")
+            .short("e")
+            .long("entropy")
+            .help("aaa")
+            .takes_value(false)
+            .required(false),
     )
     .after_help(
         format!(
@@ -187,15 +194,23 @@ pub fn run(args: Option<Vec<&str>>) -> Result<(), String> {
         return Ok(());
     }
 
-    match word_generator.gen(out) {
-        Ok(_) => Ok(()),
-        Err(e) => {
-            match e.kind() {
-                // ignore broken pipe, (e.g. happens when using head)
-                ErrorKind::BrokenPipe => Ok(()),
-                _ => Err(format!("error occurred writing to out: {}", e)),
+    let is_entropy = args.is_present("entropy");
+
+    if !is_entropy {
+        match word_generator.gen(out) {
+            Ok(_) => Ok(()),
+            Err(e) => {
+                match e.kind() {
+                    // ignore broken pipe, (e.g. happens when using head)
+                    ErrorKind::BrokenPipe => Ok(()),
+                    _ => Err(format!("error occurred writing to out: {}", e)),
+                }
             }
         }
+    } else {
+        let entropy = password_entropy::compute_password_entropy(mask);
+        println!("the entropy is {}", entropy);
+        Ok(())
     }
 }
 
