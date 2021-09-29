@@ -1,4 +1,4 @@
-use crate::MAX_WORD_SIZE;
+use crate::{BoxResult, MAX_WORD_SIZE};
 use regex::Regex;
 
 #[derive(Debug, PartialEq)]
@@ -10,9 +10,9 @@ pub enum MaskOp {
 }
 
 /// parses `mask` string into the operations it means
-pub fn parse_mask(mask: &str) -> Result<Vec<MaskOp>, &'static str> {
+pub fn parse_mask(mask: &str) -> BoxResult<Vec<MaskOp>> {
     if !is_valid_mask(mask) {
-        return Err("Invalid mask");
+        bail!("Invalid mask");
     }
 
     let mut mask_ops = vec![];

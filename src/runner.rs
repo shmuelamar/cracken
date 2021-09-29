@@ -2,10 +2,13 @@ use std::env;
 use std::fs::File;
 use std::io::{ErrorKind, Write};
 
-use clap::{App, Arg, ArgMatches};
+use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
+use simple_error::SimpleError;
 
-use crate::built_info;
 use crate::generators::get_word_generator;
+use crate::helpers::RawFileReader;
+use crate::password_entropy::EntropyEstimator;
+use crate::{built_info, BoxResult};
 
 const EXAMPLE_USAGE: &str = r#"Example Usage:
 
@@ -41,11 +44,17 @@ const EXAMPLE_USAGE: &str = r#"Example Usage:
 
   # repeating wordlists multiple times and combining charsets
   cracken -w "verbs.txt" -w "nouns.txt" "?w1?w2?w1?w2?w2?d?d?d"
+
+  # estimating entropy of a password
+  cracken entropy --smartlist vocab.txt "helloworld123!"
+
+  # estimating the entropy of a passwords file
+  cracken entropy --smartlist vocab.txt -p passwords.txt
 "#;
 
 fn parse_args(args: Option<Vec<&str>>) -> ArgMatches<'static> {
     let osargs: Vec<String>;
-    let args = match args {
+    let mut args = match args {
         Some(itr) => itr,
         None => {
             osargs = env::args().collect();
@@ -53,11 +62,32 @@ fn parse_args(args: Option<Vec<&str>>) -> ArgMatches<'static> {
         }
     };
 
+    // workaround for default subcommand
+    if args.len() >= 2 && !vec!["generate", "entropy", "--help"].contains(&args[1]) {
+        args.insert(1, "generate");
+    }
+
     App::new(format!(
         "Cracken v{} - {}",
         built_info::PKG_VERSION,
         built_info::PKG_DESCRIPTION
-    ))
+    )).setting(AppSettings::DisableHelpSubcommand)
+        .setting(AppSettings::ArgRequiredElseHelp)
+    .after_help(
+        format!(
+            "{}\n{}-v{} {}-{} compiler: {}\nmore info at: {}",
+            EXAMPLE_USAGE,
+            built_info::PKG_NAME,
+            built_info::PKG_VERSION,
+            built_info::CFG_OS,
+            built_info::CFG_TARGET_ARCH,
+            built_info::RUSTC_VERSION,
+            built_info::PKG_HOMEPAGE,
+        )
+        .as_str())
+        .subcommand(SubCommand::with_name("generate")
+        .about("(default) - Generates newline separated words according to given mask and wordlist files")
+        .display_order(0)
     .arg(
         Arg::with_name("mask")
             .long_help(
@@ -133,26 +163,57 @@ available masks are:
             .help("output file to write the wordlist to, defaults to stdout")
             .takes_value(true)
             .required(false),
-    )
-    .after_help(
-        format!(
-            "{}\n{}-v{} {}-{} compiler: {}\nmore info at: {}",
-            EXAMPLE_USAGE,
-            built_info::PKG_NAME,
-            built_info::PKG_VERSION,
-            built_info::CFG_OS,
-            built_info::CFG_TARGET_ARCH,
-            built_info::RUSTC_VERSION,
-            built_info::PKG_HOMEPAGE,
+    )).subcommand(SubCommand::with_name("entropy")
+        .about("Computes the estimated entropy of password or password file.\nThe entropy of a password is the log2(len(keyspace)) of the password")
+        .arg(
+        Arg::with_name("smartlist")
+            .short("f")
+            .long("smartlist")
+            .help("smartlist input file to estimate entropy with, a newline separated text file")
+            .takes_value(true)
+            .required(true),
+        ).arg(
+        Arg::with_name("password")
+            .help("password to estimate entropy for")
+            .takes_value(true)
+            .required(false),
+        ).arg(
+        Arg::with_name("passwords-file")
+            .short("p")
+            .long("passwords-file")
+            .help("newline separated password file to estimate entropy for")
+            .takes_value(true)
+            .required(false)
+            .conflicts_with("password"),
+        ).arg(
+        Arg::with_name("summary")
+            .short("s")
+            .long("summary")
+            .help("output summary of entropy for password")
+            .takes_value(false)
+            .required(false)
+            .conflicts_with("password"),
         )
-        .as_str(),
     )
     .get_matches_from(args)
 }
 
-pub fn run(args: Option<Vec<&str>>) -> Result<(), String> {
+pub fn run(args: Option<Vec<&str>>) -> BoxResult<()> {
     // parse args
-    let args = parse_args(args);
+    let arg_matches = parse_args(args);
+
+    match arg_matches.subcommand() {
+        ("generate", matches) => {
+            run_wordlist_generator(matches.ok_or_else(|| SimpleError::new("invalid command"))?)
+        }
+        ("entropy", matches) => {
+            run_entropy_estimator(matches.ok_or_else(|| SimpleError::new("invalid command"))?)
+        }
+        _ => unreachable!("oopsie, subcommand is required"),
+    }
+}
+
+pub fn run_wordlist_generator(args: &ArgMatches) -> BoxResult<()> {
     let mask = args.value_of("mask").unwrap();
 
     // TODO: result should fail on bad input not default value
@@ -164,7 +225,7 @@ pub fn run(args: Option<Vec<&str>>) -> Result<(), String> {
     let out: Option<Box<dyn Write>> = match outfile {
         Some(fname) => match File::create(fname) {
             Ok(fp) => Some(Box::new(fp)),
-            Err(e) => return Err(format!("cannot open file {}: {}", fname, e)),
+            Err(e) => bail!("cannot open file {}: {}", fname, e),
         },
         None => None,
     };
@@ -193,19 +254,62 @@ pub fn run(args: Option<Vec<&str>>) -> Result<(), String> {
             match e.kind() {
                 // ignore broken pipe, (e.g. happens when using head)
                 ErrorKind::BrokenPipe => Ok(()),
-                _ => Err(format!("error occurred writing to out: {}", e)),
+                _ => bail!("error occurred writing to out: {}", e),
             }
         }
     }
 }
 
+pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
+    let smartlist_file = args.value_of("smartlist").unwrap();
+    let est = EntropyEstimator::from_file(smartlist_file)?;
+    let is_summary_only = args.is_present("summary");
+    let mut total_entropy = 0f64;
+    let mut pwd_count = 0usize;
+
+    if let Some(pwd) = args.value_of("password") {
+        println!("{}", est.compute_password_min_entropy(pwd.as_bytes())?);
+    } else if let Some(pwd_file) = args.value_of("passwords-file") {
+        let file = File::open(pwd_file)?;
+        let reader = RawFileReader::new(file);
+        for pwd in reader.into_iter() {
+            let pwd_entropy = est.compute_password_min_entropy(&pwd?)?;
+            if !is_summary_only {
+                println!("{}", pwd_entropy);
+            } else {
+                total_entropy += pwd_entropy;
+            }
+            pwd_count += 1;
+        }
+
+        if is_summary_only {
+            println!("avg entropy: {}", total_entropy / pwd_count as f64);
+        }
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::runner;
+    use crate::{runner, test_util};
 
     #[test]
-    fn test_run_smoke() {
-        let args = Some(vec!["cracken", "?d"]);
+    fn test_run_generate_smoke() {
+        for args in vec![vec!["cracken", "generate", "?d"], vec!["cracken", "?d"]] {
+            assert!(runner::run(Some(args)).is_ok());
+        }
+    }
+
+    #[test]
+    fn test_run_entropy_smoke() {
+        let vocab_fname = test_util::wordlist_fname("vocab.txt");
+        let args = Some(vec![
+            "cracken",
+            "entropy",
+            "--smartlist",
+            vocab_fname.to_str().unwrap(),
+            "helloworld123!",
+        ]);
         assert!(runner::run(args).is_ok());
     }
 

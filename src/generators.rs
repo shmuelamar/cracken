@@ -1,13 +1,14 @@
-use num_bigint::{BigUint, ToBigUint};
 use std::io;
 use std::io::Write;
 use std::rc::Rc;
+
+use num_bigint::{BigUint, ToBigUint};
 
 use crate::charsets::Charset;
 use crate::mask::{parse_mask, MaskOp};
 use crate::stackbuf::StackBuf;
 use crate::wordlists::{Wordlist, WordlistIterator};
-use crate::MAX_WORD_SIZE;
+use crate::{BoxResult, MAX_WORD_SIZE};
 
 pub trait WordGenerator {
     fn gen<'b>(&self, out: Option<Box<dyn Write + 'b>>) -> Result<(), std::io::Error>;
@@ -53,7 +54,7 @@ pub fn get_word_generator<'a>(
     maxlen: Option<usize>,
     custom_charsets: &[&'a str],
     wordlists_fnames: &[&'a str],
-) -> Result<Box<dyn WordGenerator + 'a>, String> {
+) -> BoxResult<Box<dyn WordGenerator + 'a>> {
     if wordlists_fnames.is_empty() {
         Ok(Box::new(CharsetGenerator::new(
             mask,
@@ -62,7 +63,7 @@ pub fn get_word_generator<'a>(
             custom_charsets,
         )?))
     } else if minlen.is_some() || maxlen.is_some() {
-        Err("cannot set minlen or maxlen with wordlists".to_owned())
+        bail!("cannot set minlen or maxlen with wordlists")
     } else {
         Ok(Box::new(WordlistGenerator::new(
             mask,
@@ -78,9 +79,10 @@ impl<'a> CharsetGenerator<'a> {
         minlen: Option<usize>,
         maxlen: Option<usize>,
         custom_charsets: &[&'a str],
-    ) -> Result<CharsetGenerator<'a>, String> {
+    ) -> BoxResult<CharsetGenerator<'a>> {
         let mask_ops = parse_mask(mask)?;
 
+        // TODO: we need to check similarly wordlist len at is_valid_mask()
         let mut max_custom_charset = -1;
         for op in &mask_ops {
             if let MaskOp::CustomCharset(idx) = op {
@@ -90,11 +92,11 @@ impl<'a> CharsetGenerator<'a> {
 
         // validate custom charset
         if max_custom_charset >= custom_charsets.len() as isize {
-            return Err(format!(
+            bail!(
                 "mask contains ?{} charset but only {} custom charsets defined",
                 max_custom_charset + 1,
                 custom_charsets.len()
-            ));
+            );
         }
 
         let charsets: Vec<_> = mask_ops
@@ -113,10 +115,10 @@ impl<'a> CharsetGenerator<'a> {
 
         // validate minlen
         if !(0 < minlen && minlen <= maxlen && minlen <= charsets.len()) {
-            return Err("minlen is invalid".to_owned());
+            bail!("minlen is invalid");
         }
         if maxlen > charsets.len() {
-            return Err("maxlen is invalid".to_owned());
+            bail!("maxlen is invalid");
         }
 
         // prepare min word - the longest first word
@@ -198,13 +200,13 @@ impl<'a> WordlistGenerator<'a> {
         mask: &'a str,
         wordlists_fnames: &[&'a str],
         custom_charsets: &[&'a str],
-    ) -> Result<WordlistGenerator<'a>, &'static str> {
+    ) -> BoxResult<WordlistGenerator<'a>> {
         let mask_ops = parse_mask(mask)?;
 
         // TODO: split to functions
         let mut wordlists_data = vec![];
         for fname in wordlists_fnames.iter() {
-            wordlists_data.push(Rc::new(Wordlist::from_file(fname).expect("invalid fname")));
+            wordlists_data.push(Rc::new(Wordlist::from_file(fname)?));
         }
 
         // TODO: return error from custom_charset not in index & invalid symbol
@@ -363,12 +365,15 @@ impl<'a> WordGenerator for WordlistGenerator<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::{CharsetGenerator, WordGenerator};
-    use crate::generators::get_word_generator;
-    use num_bigint::{BigUint, ToBigUint};
     use std::fs;
     use std::io::Cursor;
-    use std::path;
+
+    use num_bigint::{BigUint, ToBigUint};
+
+    use crate::generators::get_word_generator;
+    use crate::test_util::wordlist_fname;
+
+    use super::{CharsetGenerator, WordGenerator};
 
     #[test]
     fn test_gen_words_single_digit() {
@@ -420,8 +425,8 @@ mod tests {
         let result = CharsetGenerator::new("?1", None, None, &vec![]);
 
         assert_eq!(
-            result.err(),
-            Some("mask contains ?1 charset but only 0 custom charsets defined".to_owned()),
+            result.err().unwrap().to_string(),
+            "mask contains ?1 charset but only 0 custom charsets defined",
         );
     }
 
@@ -485,12 +490,6 @@ mod tests {
         fs::write(wordlist_fname(&s2), &result).unwrap();
         assert_eq!(result, expected);
         result
-    }
-
-    fn wordlist_fname(fname: &str) -> path::PathBuf {
-        let mut d = path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        d.extend(vec!["test-resources", fname]);
-        d
     }
 
     #[test]
