@@ -90,11 +90,11 @@ impl<'a> CharsetGenerator<'a> {
 
         // validate custom charset
         if max_custom_charset >= custom_charsets.len() as isize {
-            bail!(format!(
+            bail!(
                 "mask contains ?{} charset but only {} custom charsets defined",
                 max_custom_charset + 1,
                 custom_charsets.len()
-            ));
+            );
         }
 
         let charsets: Vec<_> = mask_ops

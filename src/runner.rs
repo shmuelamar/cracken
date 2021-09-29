@@ -171,7 +171,7 @@ pub fn run(args: Option<Vec<&str>>) -> BoxResult<()> {
     let out: Option<Box<dyn Write>> = match outfile {
         Some(fname) => match File::create(fname) {
             Ok(fp) => Some(Box::new(fp)),
-            Err(e) => bail!(format!("cannot open file {}: {}", fname, e)),
+            Err(e) => bail!("cannot open file {}: {}", fname, e),
         },
         None => None,
     };
@@ -203,13 +203,14 @@ pub fn run(args: Option<Vec<&str>>) -> BoxResult<()> {
                 match e.kind() {
                     // ignore broken pipe, (e.g. happens when using head)
                     ErrorKind::BrokenPipe => Ok(()),
-                    _ => bail!(format!("error occurred writing to out: {}", e)),
+                    _ => bail!("error occurred writing to out: {}", e),
                 }
             }
         }
     } else {
-        let entropy = password_entropy::compute_password_entropy(mask)?;
-        println!("the entropy is {}", entropy);
+        let (entropy, path) = password_entropy::compute_password_entropy(mask)?;
+        println!("the cost is {}", entropy);
+        println!("{:?}", path);
         Ok(())
     }
 }
