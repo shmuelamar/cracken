@@ -5,7 +5,7 @@ use std::io::{ErrorKind, Write};
 use clap::{App, Arg, ArgMatches};
 
 use crate::generators::get_word_generator;
-use crate::{built_info, password_entropy};
+use crate::{built_info, password_entropy, BoxResult};
 
 const EXAMPLE_USAGE: &str = r#"Example Usage:
 
@@ -157,7 +157,7 @@ available masks are:
     .get_matches_from(args)
 }
 
-pub fn run(args: Option<Vec<&str>>) -> Result<(), String> {
+pub fn run(args: Option<Vec<&str>>) -> BoxResult<()> {
     // parse args
     let args = parse_args(args);
     let mask = args.value_of("mask").unwrap();
@@ -171,7 +171,7 @@ pub fn run(args: Option<Vec<&str>>) -> Result<(), String> {
     let out: Option<Box<dyn Write>> = match outfile {
         Some(fname) => match File::create(fname) {
             Ok(fp) => Some(Box::new(fp)),
-            Err(e) => return Err(format!("cannot open file {}: {}", fname, e)),
+            Err(e) => bail!(format!("cannot open file {}: {}", fname, e)),
         },
         None => None,
     };
@@ -203,12 +203,12 @@ pub fn run(args: Option<Vec<&str>>) -> Result<(), String> {
                 match e.kind() {
                     // ignore broken pipe, (e.g. happens when using head)
                     ErrorKind::BrokenPipe => Ok(()),
-                    _ => Err(format!("error occurred writing to out: {}", e)),
+                    _ => bail!(format!("error occurred writing to out: {}", e)),
                 }
             }
         }
     } else {
-        let entropy = password_entropy::compute_password_entropy(mask);
+        let entropy = password_entropy::compute_password_entropy(mask)?;
         println!("the entropy is {}", entropy);
         Ok(())
     }

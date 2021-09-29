@@ -123,7 +123,6 @@ dependencies = [
 name = "cracken"
 version = "0.1.6"
 dependencies = [
- "aho-corasick",
  "built",
  "clap",
  "criterion",
@@ -132,7 +131,7 @@ dependencies = [
  "ordered-float",
  "pathfinding",
  "regex",
- "serde",
+ "simple-error",
 ]
 
 [[package]]
@@ -633,6 +632,12 @@ dependencies = [
  "ryu",
  "serde",
 ]
+
+[[package]]
+name = "simple-error"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cc47a29ce97772ca5c927f75bac34866b16d64e07f330c3248e2d7226623901b"
 
 [[package]]
 name = "strsim"

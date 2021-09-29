@@ -1,3 +1,4 @@
+use crate::BoxResult;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -21,7 +22,7 @@ pub struct WordlistIterator<'a> {
 }
 
 impl Wordlist {
-    pub fn from_file(fname: &str) -> std::io::Result<Wordlist> {
+    pub fn from_file(fname: &str) -> BoxResult<Wordlist> {
         let fp = BufReader::new(File::open(fname)?);
         let mut len2words = HashMap::new();
 
