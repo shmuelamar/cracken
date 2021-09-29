@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::path::Path;
+
+use crate::BoxResult;
 
 /// a buffer containing words of the same length
 #[derive(Debug)]
@@ -21,7 +24,7 @@ pub struct WordlistIterator<'a> {
 }
 
 impl Wordlist {
-    pub fn from_file(fname: &str) -> std::io::Result<Wordlist> {
+    pub fn from_file<P: AsRef<Path>>(fname: P) -> BoxResult<Wordlist> {
         let fp = BufReader::new(File::open(fname)?);
         let mut len2words = HashMap::new();
 
@@ -117,7 +120,7 @@ impl<'a> WordlistIterator<'a> {
 
 #[cfg(test)]
 mod tests {
-    use std::path;
+    use crate::test_util::wordlist_fname;
 
     use super::Wordlist;
 
@@ -144,11 +147,5 @@ password
             .map(|s| s.to_owned())
             .collect();
         assert_eq!(words, expected);
-    }
-
-    fn wordlist_fname(fname: &str) -> String {
-        let mut d = path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        d.extend(vec!["test-resources", fname]);
-        d.to_str().unwrap().to_owned()
     }
 }
