@@ -1,14 +1,16 @@
-use crate::BoxResult;
-use num_bigint::{BigUint, ToBigUint};
-use ordered_float::OrderedFloat;
-use pathfinding::astar;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
+use ordered_float::OrderedFloat;
+use pathfinding::astar;
+use simple_error::SimpleError;
+
+use crate::BoxResult;
+
 const SYMBOLS_SPACE: &[u8; 32] = b"!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
 
-pub fn compute_password_entropy(pwd: &str) -> BoxResult<(BigUint, Vec<String>)> {
+pub fn compute_password_entropy(pwd: &str) -> BoxResult<(f64, Vec<String>)> {
     // load vocab file
     let word2rank = load_vocab("/home/samar/dev/cracken/vocab.txt")?;
     let raw_pwd = pwd.as_bytes();
@@ -27,39 +29,34 @@ pub fn compute_password_entropy(pwd: &str) -> BoxResult<(BigUint, Vec<String>)> 
         |_| OrderedFloat::<f64>(0f64),
         |&n| n == raw_pwd.len(),
     );
-
-    let best_path = match amatch {
-        Some((path, _)) => path,
-        None => bail!("bad characters in password"),
-    };
+    let (best_path, entropy) =
+        amatch.ok_or_else(|| SimpleError::new("bad characters in password"))?;
 
     let mut best_split = Vec::with_capacity(best_path.len() - 1);
-    let mut best_cost: BigUint = 1.to_biguint().unwrap();
     let mut prev = 0usize;
     for i in best_path.into_iter().skip(1) {
         let word_i = &raw_pwd[prev..i];
         best_split.push(String::from_utf8_lossy(word_i).to_string());
         prev = i;
-        best_cost *= word2rank[word_i];
     }
-    Ok((best_cost, best_split))
+    Ok((entropy.into_inner(), best_split))
 }
 
-pub fn password_mask_cost(pwd: &str) -> BigUint {
+pub fn password_mask_cost(pwd: &str) -> f64 {
     pwd.bytes()
         .into_iter()
         .map(|ch| {
             if ch.is_ascii_digit() {
-                10.to_biguint().unwrap()
+                10f64.log2()
             } else if ch.is_ascii_alphabetic() {
-                26.to_biguint().unwrap()
+                26f64.log2()
             } else if SYMBOLS_SPACE.contains(&ch) {
-                SYMBOLS_SPACE.len().to_biguint().unwrap()
+                (SYMBOLS_SPACE.len() as f64).log2()
             } else {
-                256.to_biguint().unwrap()
+                256f64.log2()
             }
         })
-        .product()
+        .sum()
 }
 
 fn load_vocab(fname: &str) -> BoxResult<HashMap<Vec<u8>, usize>> {
@@ -98,7 +95,6 @@ fn load_vocab(fname: &str) -> BoxResult<HashMap<Vec<u8>, usize>> {
 mod tests {
     use crate::password_entropy;
     use crate::password_entropy::password_mask_cost;
-    use num_bigint::{BigUint, ToBigUint};
 
     #[test]
     fn test_compute_password_entropy() {
@@ -107,7 +103,7 @@ mod tests {
         assert_eq!(
             res,
             (
-                1899616264.to_biguint().unwrap(),
+                30.823060867312257,
                 vec!["helloworld", "123", "!"]
                     .into_iter()
                     .map(String::from)
@@ -123,7 +119,7 @@ mod tests {
         assert_eq!(
             res,
             (
-                BigUint::parse_bytes(b"6854844978407404468080607744", 10).unwrap(),
+                92.46918260193678,
                 vec![
                     "helloworld",
                     "123",
@@ -149,11 +145,7 @@ mod tests {
         assert_eq!(
             res,
             (
-                BigUint::parse_bytes(
-                    b"114073190002634044113434716879079970003599839404826329203343360",
-                    10
-                )
-                .unwrap(),
+                206.14950164576396,
                 vec![
                     "E", "9", "3", "g", "t", "a", "a", "E", "6", "y", "F", "7", "x", "DOW", "v",
                     "3", "w", "w", "2", "QE", "6", "q", "D-", "W", "y", "e", "4", "m", "k", "8",
@@ -168,19 +160,18 @@ mod tests {
 
     #[test]
     fn test_password_mask_cost() {
-        let cases: Vec<(&str, &[u8])> = vec![
-            ("Aa123456!", b"21632000000"),
-            ("0123456789", b"10000000000"),
-            ("😃", b"4294967296"),
-            ("!@#$%^&*()", b"1125899906842624"),
+        let cases: Vec<(&str, f64)> = vec![
+            ("Aa123456!", 34.33244800560635),
+            ("0123456789", 33.219280948873624),
+            ("😃", 32.0),
+            ("!@#$%^&*()", 50.0),
             (
                 "E93gtaaE6yF7xDOWv3ww2QE6qD-Wye4mk8O3Vaerem8",
-                b"234058148586890860482317269664048830525682483200000000000",
+                187.25484030613498,
             ),
         ];
         for (pwd, expected_cost) in cases {
-            let cost = BigUint::parse_bytes(expected_cost, 10).unwrap();
-            assert_eq!(password_mask_cost(pwd), cost);
+            assert_eq!(password_mask_cost(pwd), expected_cost);
         }
     }
 }

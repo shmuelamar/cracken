@@ -210,8 +210,8 @@ pub fn run(args: Option<Vec<&str>>) -> BoxResult<()> {
     } else {
         let (entropy, path) = password_entropy::compute_password_entropy(mask)?;
         let mask_entropy = password_entropy::password_mask_cost(mask);
-        println!("the cost is {}", entropy);
-        println!("the mask_entropy is {}", mask_entropy);
+        println!("the estimated entropy is {}", entropy);
+        println!("the mask entropy is {}", mask_entropy);
         println!("{:?}", path);
         Ok(())
     }
