@@ -81,6 +81,7 @@ impl<'a> CharsetGenerator<'a> {
     ) -> BoxResult<CharsetGenerator<'a>> {
         let mask_ops = parse_mask(mask)?;
 
+        // TODO: we need to check similarly wordlist len at is_valid_mask()
         let mut max_custom_charset = -1;
         for op in &mask_ops {
             if let MaskOp::CustomCharset(idx) = op {

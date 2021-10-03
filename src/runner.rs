@@ -1,11 +1,13 @@
 use std::env;
 use std::fs::File;
-use std::io::{ErrorKind, Write};
+use std::io::{BufRead, BufReader, ErrorKind, Write};
 
-use clap::{App, Arg, ArgMatches};
+use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
+use simple_error::SimpleError;
 
 use crate::generators::get_word_generator;
-use crate::{built_info, password_entropy, BoxResult};
+use crate::password_entropy::EntropyEstimator;
+use crate::{built_info, BoxResult};
 
 const EXAMPLE_USAGE: &str = r#"Example Usage:
 
@@ -45,7 +47,7 @@ const EXAMPLE_USAGE: &str = r#"Example Usage:
 
 fn parse_args(args: Option<Vec<&str>>) -> ArgMatches<'static> {
     let osargs: Vec<String>;
-    let args = match args {
+    let mut args = match args {
         Some(itr) => itr,
         None => {
             osargs = env::args().collect();
@@ -53,11 +55,19 @@ fn parse_args(args: Option<Vec<&str>>) -> ArgMatches<'static> {
         }
     };
 
+    // workaround for default subcommand
+    if args.len() < 2 || !vec!["generate", "entropy"].contains(&args[1]) {
+        args.insert(1, "generate");
+    }
+
     App::new(format!(
         "Cracken v{} - {}",
         built_info::PKG_VERSION,
         built_info::PKG_DESCRIPTION
-    ))
+    )).setting(AppSettings::DisableHelpSubcommand)
+        .subcommand(SubCommand::with_name("generate")
+        .about("(default) - Generates newline separated words according to given mask and wordlist files")
+        .display_order(0)
     .arg(
         Arg::with_name("mask")
             .long_help(
@@ -133,13 +143,6 @@ available masks are:
             .help("output file to write the wordlist to, defaults to stdout")
             .takes_value(true)
             .required(false),
-    ).arg(
-        Arg::with_name("entropy")
-            .short("e")
-            .long("entropy")
-            .help("aaa")
-            .takes_value(false)
-            .required(false),
     )
     .after_help(
         format!(
@@ -152,14 +155,58 @@ available masks are:
             built_info::RUSTC_VERSION,
             built_info::PKG_HOMEPAGE,
         )
-        .as_str(),
+        .as_str()),
+    ).subcommand(SubCommand::with_name("entropy")
+        .about("Computes the estimated entropy of password or password file.\nThe entropy of a password is the log2(keyspace) of the password")
+        .arg(
+        Arg::with_name("smartlist")
+            .short("f")
+            .long("smartlist")
+            .help("smartlist input file to estimate entropy with, a newline separated text file")
+            .takes_value(true)
+            .required(true),
+        ).arg(
+        Arg::with_name("password")
+            .help("password to estimate entropy for")
+            .takes_value(true)
+            .required(false),
+        ).arg(
+        Arg::with_name("passwords-file")
+            .short("p")
+            .long("passwords-file")
+            .help("newline separated password file to estimate entropy for")
+            .takes_value(true)
+            .required(false)
+            .conflicts_with("password"),
+        ).arg(
+        Arg::with_name("summary")
+            .short("s")
+            .long("summary")
+            .help("output summary of entropy for password")
+            .takes_value(false)
+            .required(false)
+            .conflicts_with("password"),
+        )
     )
     .get_matches_from(args)
 }
 
 pub fn run(args: Option<Vec<&str>>) -> BoxResult<()> {
     // parse args
-    let args = parse_args(args);
+    let arg_matches = parse_args(args);
+
+    match arg_matches.subcommand() {
+        ("entropy", matches) => {
+            run_entropy_estimator(matches.ok_or_else(|| SimpleError::new("invalid command"))?)
+        }
+        ("generate", matches) => {
+            run_wordlist_generator(matches.ok_or_else(|| SimpleError::new("invalid command"))?)
+        }
+        _ => unreachable!("oopsie, subcommand is required"),
+    }
+}
+
+pub fn run_wordlist_generator(args: &ArgMatches) -> BoxResult<()> {
     let mask = args.value_of("mask").unwrap();
 
     // TODO: result should fail on bad input not default value
@@ -194,27 +241,48 @@ pub fn run(args: Option<Vec<&str>>) -> BoxResult<()> {
         return Ok(());
     }
 
-    let is_entropy = args.is_present("entropy");
-
-    if !is_entropy {
-        match word_generator.gen(out) {
-            Ok(_) => Ok(()),
-            Err(e) => {
-                match e.kind() {
-                    // ignore broken pipe, (e.g. happens when using head)
-                    ErrorKind::BrokenPipe => Ok(()),
-                    _ => bail!("error occurred writing to out: {}", e),
-                }
+    match word_generator.gen(out) {
+        Ok(_) => Ok(()),
+        Err(e) => {
+            match e.kind() {
+                // ignore broken pipe, (e.g. happens when using head)
+                ErrorKind::BrokenPipe => Ok(()),
+                _ => bail!("error occurred writing to out: {}", e),
             }
         }
-    } else {
-        let (entropy, path) = password_entropy::compute_password_entropy(mask)?;
-        let mask_entropy = password_entropy::password_mask_cost(mask);
-        println!("the estimated entropy is {}", entropy);
-        println!("the mask entropy is {}", mask_entropy);
-        println!("{:?}", path);
-        Ok(())
     }
+}
+
+pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
+    let smartlist_file = args.value_of("smartlist").unwrap();
+    let est = EntropyEstimator::from_file(smartlist_file)?;
+    let is_summary_only = args.is_present("summary");
+    let mut total_entropy = 0f64;
+    let mut pwd_count = 0usize;
+
+    if let Some(pwd) = args.value_of("password") {
+        println!("{}", est.compute_password_min_entropy(pwd)?);
+    } else if let Some(pwd_file) = args.value_of("passwords-file") {
+        let file = File::open(pwd_file)?;
+        let reader = BufReader::new(file);
+        for pwd in reader.lines() {
+            if pwd.is_err() {
+                continue;
+            }
+            let pwd_entropy = est.compute_password_min_entropy((pwd?).as_str())?;
+            if !is_summary_only {
+                println!("{}", pwd_entropy);
+            } else {
+                total_entropy += pwd_entropy;
+            }
+            pwd_count += 1;
+        }
+
+        if is_summary_only {
+            println!("avg entropy: {}", total_entropy / pwd_count as f64);
+        }
+    }
+    Ok(())
 }
 
 #[cfg(test)]
