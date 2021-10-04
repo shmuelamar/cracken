@@ -1,11 +1,12 @@
 use std::env;
 use std::fs::File;
-use std::io::{BufRead, BufReader, ErrorKind, Write};
+use std::io::{ErrorKind, Write};
 
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use simple_error::SimpleError;
 
 use crate::generators::get_word_generator;
+use crate::helpers::RawFileReader;
 use crate::password_entropy::EntropyEstimator;
 use crate::{built_info, BoxResult};
 
@@ -253,6 +254,7 @@ pub fn run_wordlist_generator(args: &ArgMatches) -> BoxResult<()> {
     }
 }
 
+// TODO: tests
 pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
     let smartlist_file = args.value_of("smartlist").unwrap();
     let est = EntropyEstimator::from_file(smartlist_file)?;
@@ -261,15 +263,12 @@ pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
     let mut pwd_count = 0usize;
 
     if let Some(pwd) = args.value_of("password") {
-        println!("{}", est.compute_password_min_entropy(pwd)?);
+        println!("{}", est.compute_password_min_entropy(pwd.as_bytes())?);
     } else if let Some(pwd_file) = args.value_of("passwords-file") {
         let file = File::open(pwd_file)?;
-        let reader = BufReader::new(file);
-        for pwd in reader.lines() {
-            if pwd.is_err() {
-                continue;
-            }
-            let pwd_entropy = est.compute_password_min_entropy((pwd?).as_str())?;
+        let reader = RawFileReader::new(file);
+        for pwd in reader.into_iter() {
+            let pwd_entropy = est.compute_password_min_entropy(&pwd?)?;
             if !is_summary_only {
                 println!("{}", pwd_entropy);
             } else {
