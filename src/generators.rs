@@ -1,7 +1,8 @@
-use num_bigint::{BigUint, ToBigUint};
 use std::io;
 use std::io::Write;
 use std::rc::Rc;
+
+use num_bigint::{BigUint, ToBigUint};
 
 use crate::charsets::Charset;
 use crate::mask::{parse_mask, MaskOp};
@@ -364,12 +365,15 @@ impl<'a> WordGenerator for WordlistGenerator<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::{CharsetGenerator, WordGenerator};
-    use crate::generators::get_word_generator;
-    use num_bigint::{BigUint, ToBigUint};
     use std::fs;
     use std::io::Cursor;
-    use std::path;
+
+    use num_bigint::{BigUint, ToBigUint};
+
+    use crate::generators::get_word_generator;
+    use crate::test_util::wordlist_fname;
+
+    use super::{CharsetGenerator, WordGenerator};
 
     #[test]
     fn test_gen_words_single_digit() {
@@ -486,12 +490,6 @@ mod tests {
         fs::write(wordlist_fname(&s2), &result).unwrap();
         assert_eq!(result, expected);
         result
-    }
-
-    fn wordlist_fname(fname: &str) -> path::PathBuf {
-        let mut d = path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        d.extend(vec!["test-resources", fname]);
-        d
     }
 
     #[test]

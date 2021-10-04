@@ -32,12 +32,14 @@ impl<R: Read> Iterator for RawFileReader<R> {
 
 #[cfg(test)]
 mod tests {
-    use crate::helpers::RawFileReader;
     use std::fs::File;
+
+    use crate::helpers::RawFileReader;
+    use crate::test_util::wordlist_fname;
 
     #[test]
     fn test_reader() {
-        let file = File::open("/home/samar/dev/cracken/vocab.txt").unwrap();
+        let file = File::open(wordlist_fname("vocab.txt")).unwrap();
         let reader = RawFileReader::new(file);
         let expected: Vec<_> = vec!["a", "e", "1", "i", "o"]
             .iter()

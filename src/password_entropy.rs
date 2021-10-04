@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fs::File;
+use std::path::Path;
 
 use ordered_float::OrderedFloat;
 use pathfinding::astar;
@@ -15,7 +16,7 @@ pub struct EntropyEstimator {
 }
 
 impl EntropyEstimator {
-    pub fn from_file(filename: &str) -> BoxResult<Self> {
+    pub fn from_file<P: AsRef<Path>>(filename: P) -> BoxResult<Self> {
         Ok(EntropyEstimator {
             word2entropy: Self::load_vocab(filename)?,
         })
@@ -57,7 +58,7 @@ impl EntropyEstimator {
         Ok((entropy.into_inner(), best_split))
     }
 
-    fn load_vocab(fname: &str) -> BoxResult<HashMap<Vec<u8>, OrderedFloat<f64>>> {
+    fn load_vocab<P: AsRef<Path>>(fname: P) -> BoxResult<HashMap<Vec<u8>, OrderedFloat<f64>>> {
         let mut word2rank: HashMap<_, _> = HashMap::new();
 
         let file = File::open(fname)?;
@@ -102,12 +103,13 @@ pub fn password_mask_cost(pwd: &[u8]) -> f64 {
 mod tests {
     use crate::password_entropy::password_mask_cost;
     use crate::password_entropy::EntropyEstimator;
-    const SMARTLIST_FILENAME: &str = "/home/samar/dev/cracken/vocab.txt";
+    use crate::test_util::wordlist_fname;
 
     #[test]
     fn test_compute_password_entropy() {
+        let fname = wordlist_fname("vocab.txt");
         let pwd = "helloworld123!";
-        let est = EntropyEstimator::from_file(SMARTLIST_FILENAME).unwrap();
+        let est = EntropyEstimator::from_file(fname).unwrap();
         let res = est
             .compute_password_subword_entropy(pwd.as_bytes())
             .unwrap();
@@ -126,7 +128,8 @@ mod tests {
     #[test]
     fn test_compute_password_entropy_long_password() {
         let pwd = "helloworld123!helloworld123!helloworld123!";
-        let est = EntropyEstimator::from_file(SMARTLIST_FILENAME).unwrap();
+        let fname = wordlist_fname("vocab.txt");
+        let est = EntropyEstimator::from_file(fname).unwrap();
         let res = est
             .compute_password_subword_entropy(pwd.as_bytes())
             .unwrap();
@@ -159,7 +162,8 @@ mod tests {
     #[test]
     fn test_compute_password_entropy_random_password() {
         let pwd = "E93gtaaE6yF7xDOWv3ww2QE6qD-Wye4mk8O3Vaerem8";
-        let est = EntropyEstimator::from_file(SMARTLIST_FILENAME).unwrap();
+        let fname = wordlist_fname("vocab.txt");
+        let est = EntropyEstimator::from_file(fname).unwrap();
         let res = est
             .compute_password_subword_entropy(pwd.as_bytes())
             .unwrap();
