@@ -57,7 +57,7 @@ fn parse_args(args: Option<Vec<&str>>) -> ArgMatches<'static> {
     };
 
     // workaround for default subcommand
-    if args.len() < 2 || !vec!["generate", "entropy"].contains(&args[1]) {
+    if args.len() >= 2 && !vec!["generate", "entropy", "--help"].contains(&args[1]) {
         args.insert(1, "generate");
     }
 
@@ -66,6 +66,7 @@ fn parse_args(args: Option<Vec<&str>>) -> ArgMatches<'static> {
         built_info::PKG_VERSION,
         built_info::PKG_DESCRIPTION
     )).setting(AppSettings::DisableHelpSubcommand)
+        .setting(AppSettings::ArgRequiredElseHelp)
         .subcommand(SubCommand::with_name("generate")
         .about("(default) - Generates newline separated words according to given mask and wordlist files")
         .display_order(0)
@@ -158,7 +159,7 @@ available masks are:
         )
         .as_str()),
     ).subcommand(SubCommand::with_name("entropy")
-        .about("Computes the estimated entropy of password or password file.\nThe entropy of a password is the log2(keyspace) of the password")
+        .about("Computes the estimated entropy of password or password file.\nThe entropy of a password is the log2(len(keyspace)) of the password")
         .arg(
         Arg::with_name("smartlist")
             .short("f")
@@ -197,11 +198,11 @@ pub fn run(args: Option<Vec<&str>>) -> BoxResult<()> {
     let arg_matches = parse_args(args);
 
     match arg_matches.subcommand() {
-        ("entropy", matches) => {
-            run_entropy_estimator(matches.ok_or_else(|| SimpleError::new("invalid command"))?)
-        }
         ("generate", matches) => {
             run_wordlist_generator(matches.ok_or_else(|| SimpleError::new("invalid command"))?)
+        }
+        ("entropy", matches) => {
+            run_entropy_estimator(matches.ok_or_else(|| SimpleError::new("invalid command"))?)
         }
         _ => unreachable!("oopsie, subcommand is required"),
     }
@@ -254,7 +255,6 @@ pub fn run_wordlist_generator(args: &ArgMatches) -> BoxResult<()> {
     }
 }
 
-// TODO: tests
 pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
     let smartlist_file = args.value_of("smartlist").unwrap();
     let est = EntropyEstimator::from_file(smartlist_file)?;
@@ -286,11 +286,25 @@ pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::runner;
+    use crate::{runner, test_util};
 
     #[test]
-    fn test_run_smoke() {
-        let args = Some(vec!["cracken", "?d"]);
+    fn test_run_generate_smoke() {
+        for args in vec![vec!["cracken", "generate", "?d"], vec!["cracken", "?d"]] {
+            assert!(runner::run(Some(args)).is_ok());
+        }
+    }
+
+    #[test]
+    fn test_run_entropy_smoke() {
+        let vocab_fname = test_util::wordlist_fname("vocab.txt");
+        let args = Some(vec![
+            "cracken",
+            "entropy",
+            "--smartlist",
+            vocab_fname.to_str().unwrap(),
+            "helloworld123!",
+        ]);
         assert!(runner::run(args).is_ok());
     }
 
