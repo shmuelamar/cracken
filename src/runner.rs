@@ -44,6 +44,12 @@ const EXAMPLE_USAGE: &str = r#"Example Usage:
 
   # repeating wordlists multiple times and combining charsets
   cracken -w "verbs.txt" -w "nouns.txt" "?w1?w2?w1?w2?w2?d?d?d"
+
+  # estimating entropy of a password
+  cracken entropy --smartlist vocab.txt "helloworld123!"
+
+  # estimating the entropy of a passwords file
+  cracken entropy --smartlist vocab.txt -p passwords.txt
 "#;
 
 fn parse_args(args: Option<Vec<&str>>) -> ArgMatches<'static> {
@@ -67,6 +73,18 @@ fn parse_args(args: Option<Vec<&str>>) -> ArgMatches<'static> {
         built_info::PKG_DESCRIPTION
     )).setting(AppSettings::DisableHelpSubcommand)
         .setting(AppSettings::ArgRequiredElseHelp)
+    .after_help(
+        format!(
+            "{}\n{}-v{} {}-{} compiler: {}\nmore info at: {}",
+            EXAMPLE_USAGE,
+            built_info::PKG_NAME,
+            built_info::PKG_VERSION,
+            built_info::CFG_OS,
+            built_info::CFG_TARGET_ARCH,
+            built_info::RUSTC_VERSION,
+            built_info::PKG_HOMEPAGE,
+        )
+        .as_str())
         .subcommand(SubCommand::with_name("generate")
         .about("(default) - Generates newline separated words according to given mask and wordlist files")
         .display_order(0)
@@ -145,20 +163,7 @@ available masks are:
             .help("output file to write the wordlist to, defaults to stdout")
             .takes_value(true)
             .required(false),
-    )
-    .after_help(
-        format!(
-            "{}\n{}-v{} {}-{} compiler: {}\nmore info at: {}",
-            EXAMPLE_USAGE,
-            built_info::PKG_NAME,
-            built_info::PKG_VERSION,
-            built_info::CFG_OS,
-            built_info::CFG_TARGET_ARCH,
-            built_info::RUSTC_VERSION,
-            built_info::PKG_HOMEPAGE,
-        )
-        .as_str()),
-    ).subcommand(SubCommand::with_name("entropy")
+    )).subcommand(SubCommand::with_name("entropy")
         .about("Computes the estimated entropy of password or password file.\nThe entropy of a password is the log2(len(keyspace)) of the password")
         .arg(
         Arg::with_name("smartlist")
