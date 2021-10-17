@@ -1,10 +1,11 @@
 use std::env;
 use std::fs::File;
-use std::io::{ErrorKind, Write};
+use std::io::{BufWriter, ErrorKind, Write};
 
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use simple_error::SimpleError;
 
+use crate::create_smartlist::{SmartlistBuilder, SmartlistTokenizer};
 use crate::generators::get_word_generator;
 use crate::helpers::RawFileReader;
 use crate::password_entropy::EntropyEstimator;
@@ -63,7 +64,7 @@ fn parse_args(args: Option<Vec<&str>>) -> ArgMatches<'static> {
     };
 
     // workaround for default subcommand
-    if args.len() >= 2 && !vec!["generate", "entropy", "--help"].contains(&args[1]) {
+    if args.len() >= 2 && !vec!["generate", "entropy", "create", "--help"].contains(&args[1]) {
         args.insert(1, "generate");
     }
 
@@ -194,6 +195,79 @@ available masks are:
             .required(false)
             .conflicts_with("password"),
         )
+    ).subcommand(SubCommand::with_name("create")
+        .about("Create a new smartlist from input file(s)")
+        .arg(
+        Arg::with_name("file")
+            .short("f")
+            .long("file")
+            .help("input filename, can be specified multiple times for multiple files")
+            .takes_value(true)
+            .required(true)
+            .multiple(true)
+        )
+        .arg(
+            Arg::with_name("smartlist")
+            .short("o")
+            .long("smartlist")
+            .help("output smartlist filename")
+            .takes_value(true)
+            .required(true)
+        )
+        .arg(
+        Arg::with_name("tokenizer")
+            .short("t")
+            .long("tokenizer")
+            .help("tokenizer to use, can be specified multiple times.\none of: bpe,unigram,wordpiece")
+            .takes_value(true)
+            // TODO: constant or better way to validate without boilerplate
+            .validator(|s| if vec!["bpe", "unigram", "wordpiece"].contains(&s.as_str()) {Ok(())} else {Err("tokenizers must be one of: bpe,unigram,wordpiece".to_string())})
+            .required(false)
+            .multiple(true)
+            .default_value("unigram")
+        )
+        .arg(
+            Arg::with_name("quiet")
+            .short("q")
+            .long("quiet")
+            .help("disables printing progress bar")
+            .takes_value(false)
+            .required(false)
+        )
+        .arg(
+            Arg::with_name("vocab_max_size")
+            .short("m")
+            .long("vocab-max-size")
+            .help("max vocabulary size")
+            .takes_value(false)
+            .required(false)
+            .default_value("10000")
+        )
+        .arg(
+            Arg::with_name("min_frequency")
+            .short("min-frequency")
+            .long("min-frequency")
+            .help("minimum frequency of a word, relevant only for BPE tokenizer")
+            .takes_value(false)
+            .required(false)
+            .default_value("0")
+        )
+        .arg(
+            Arg::with_name("numbers_max_size")
+            .long("numbers-max-size")
+            .help("filters numbers (all digits) longer than the specified size")
+            .takes_value(true)
+            .required(false)
+            .default_value("")
+        )
+        .arg(
+            Arg::with_name("overlapping_word_max_size")
+            .long("overlapping-word-max-size")
+            .help("filters words having other overlapping word(s) larger than the specified size")
+            .takes_value(true)
+            .required(false)
+            .default_value("")
+        )
     )
     .get_matches_from(args)
 }
@@ -208,6 +282,9 @@ pub fn run(args: Option<Vec<&str>>) -> BoxResult<()> {
         }
         ("entropy", matches) => {
             run_entropy_estimator(matches.ok_or_else(|| SimpleError::new("invalid command"))?)
+        }
+        ("create", matches) => {
+            run_create_smartlist(matches.ok_or_else(|| SimpleError::new("invalid command"))?)
         }
         _ => unreachable!("oopsie, subcommand is required"),
     }
@@ -285,6 +362,50 @@ pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
         if is_summary_only {
             println!("avg entropy: {}", total_entropy / pwd_count as f64);
         }
+    }
+    Ok(())
+}
+
+pub fn run_create_smartlist(args: &ArgMatches) -> BoxResult<()> {
+    let outfile = args.value_of("smartlist").unwrap();
+    let infiles = args.values_of("file").map(|x| x.collect()).unwrap();
+    // TODO: from config or optional or if let
+    let vocab_max_size = value_t!(args.value_of("vocab_max_size"), u32).unwrap_or(10_000);
+    let min_frequency = value_t!(args.value_of("min_frequency"), u32).unwrap_or(10_000);
+    let print_progress = !args.is_present("quiet");
+    let numbers_max_size = value_t!(args.value_of("numbers_max_size"), u32).ok();
+    let overlapping_word_max_size = value_t!(args.value_of("overlapping_word_max_size"), u32).ok();
+
+    let tokenizers = args
+        .values_of("tokenizer")
+        .map(|x| x.collect())
+        .unwrap_or(vec!["unigram"])
+        .iter()
+        .map(|&x| {
+            match x {
+                "bpe" => SmartlistTokenizer::BPE,
+                "unigram" => SmartlistTokenizer::Unigram,
+                "wordpiece" => SmartlistTokenizer::WordPiece,
+                _ => unreachable!("invalid tokenizer {}", x), // TODO: we need to ensure these values
+            }
+        })
+        .collect::<Vec<_>>();
+
+    let mut writer = BufWriter::new(File::create(outfile)?);
+    let vocab = SmartlistBuilder::new()
+        .infiles(infiles)
+        .min_frequency(min_frequency)
+        .vocab_max_size(vocab_max_size)
+        .tokenizers(tokenizers.into_iter())
+        .print_progress(print_progress)
+        .numbers_max_size(numbers_max_size)
+        .overlapping_word_max_size(overlapping_word_max_size)
+        .build()?;
+
+    // write to file
+    for word in vocab.iter() {
+        writer.write_all(word.as_bytes())?;
+        writer.write_all(b"\n")?;
     }
     Ok(())
 }

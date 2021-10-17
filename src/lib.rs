@@ -9,6 +9,7 @@ extern crate regex;
 use std::error::Error;
 
 pub mod charsets;
+pub mod create_smartlist;
 pub mod generators;
 pub mod helpers;
 pub mod mask;
