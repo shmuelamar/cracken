@@ -54,7 +54,7 @@ bench:
 	cargo bench
 
 coverage:
-	cargo tarpaulin -o Html
+	cargo tarpaulin -o Html --avoid-cfg-tarpaulin
 
 ci: test test-release coverage build-crate print-release-version
 

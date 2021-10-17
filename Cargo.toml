@@ -1,8 +1,8 @@
 [package]
 name = "cracken"
-version = "0.1.7"
+version = "1.0.0"
 authors = ["shmuelamar"]
-edition = "2018"
+edition = "2021"
 build = "build.rs"
 description = "a fast password wordlist generator"
 homepage = "https://github.com/shmuelamar/cracken"
@@ -39,16 +39,19 @@ opt-level = 3
 codegen-units = 1
 
 [dependencies]
+aho-corasick = "~0.7"
 clap = { version = "~2.33.0", features = [ "suggestions", "color" , "wrap_help"] }
-regex = "~1"
+itertools = "~0.10"
 lazy_static = "~1.4.0"
 num-bigint = "~0.4.0"
-pathfinding = "~0.5.0"
 ordered-float = "~2.0.0"
+pathfinding = "~0.5.0"
+regex = "~1"
 simple-error = "~0.2"
+tokenizers = "~0.11.0"
 
 [dev-dependencies]
-criterion = "~0.3.4"
+criterion = "~0.3.5"
 
 [build-dependencies]
 built = "~0.4.4"

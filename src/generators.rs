@@ -1,23 +1,22 @@
-use std::io;
 use std::io::Write;
 use std::rc::Rc;
 
 use num_bigint::{BigUint, ToBigUint};
 
 use crate::charsets::Charset;
-use crate::mask::{parse_mask, MaskOp};
+use crate::mask::{parse_mask, validate_charsets, validate_wordlists, MaskOp};
 use crate::stackbuf::StackBuf;
 use crate::wordlists::{Wordlist, WordlistIterator};
 use crate::{BoxResult, MAX_WORD_SIZE};
 
 pub trait WordGenerator {
-    fn gen<'b>(&self, out: Option<Box<dyn Write + 'b>>) -> Result<(), std::io::Error>;
+    fn gen<'b>(&self, out: &mut Box<dyn Write + 'b>) -> Result<(), std::io::Error>;
     fn combinations(&self) -> BigUint;
 }
 
 /// Generator optimized for charsets only
-pub struct CharsetGenerator<'a> {
-    pub mask: &'a str,
+pub struct CharsetGenerator {
+    pub mask: Vec<MaskOp>,
     pub minlen: usize,
     pub maxlen: usize,
     charsets: Vec<Charset>,
@@ -25,8 +24,8 @@ pub struct CharsetGenerator<'a> {
 }
 
 /// Wordlist Generator for both charsets and wordlists
-pub struct WordlistGenerator<'a> {
-    pub mask: &'a str,
+pub struct WordlistGenerator {
+    pub mask: Vec<MaskOp>,
     items: Vec<WordlistItem>,
 }
 
@@ -55,9 +54,13 @@ pub fn get_word_generator<'a>(
     custom_charsets: &[&'a str],
     wordlists_fnames: &[&'a str],
 ) -> BoxResult<Box<dyn WordGenerator + 'a>> {
-    if wordlists_fnames.is_empty() {
+    let mask_ops = parse_mask(mask)?;
+    validate_charsets(&mask_ops, custom_charsets.len())?;
+    validate_wordlists(&mask_ops, wordlists_fnames.len())?;
+
+    if mask_ops.iter().all(|op| !matches!(op, MaskOp::Wordlist(_))) {
         Ok(Box::new(CharsetGenerator::new(
-            mask,
+            mask_ops,
             minlen,
             maxlen,
             custom_charsets,
@@ -66,45 +69,26 @@ pub fn get_word_generator<'a>(
         bail!("cannot set minlen or maxlen with wordlists")
     } else {
         Ok(Box::new(WordlistGenerator::new(
-            mask,
+            mask_ops,
             wordlists_fnames,
             custom_charsets,
         )?))
     }
 }
 
-impl<'a> CharsetGenerator<'a> {
+impl<'a> CharsetGenerator {
     pub fn new(
-        mask: &'a str,
+        mask: Vec<MaskOp>,
         minlen: Option<usize>,
         maxlen: Option<usize>,
         custom_charsets: &[&'a str],
-    ) -> BoxResult<CharsetGenerator<'a>> {
-        let mask_ops = parse_mask(mask)?;
-
-        // TODO: we need to check similarly wordlist len at is_valid_mask()
-        let mut max_custom_charset = -1;
-        for op in &mask_ops {
-            if let MaskOp::CustomCharset(idx) = op {
-                max_custom_charset = max_custom_charset.max(idx.to_owned() as isize)
-            }
-        }
-
-        // validate custom charset
-        if max_custom_charset >= custom_charsets.len() as isize {
-            bail!(
-                "mask contains ?{} charset but only {} custom charsets defined",
-                max_custom_charset + 1,
-                custom_charsets.len()
-            );
-        }
-
-        let charsets: Vec<_> = mask_ops
-            .into_iter()
+    ) -> BoxResult<CharsetGenerator> {
+        let charsets: Vec<_> = mask
+            .iter()
             .map(|op| match op {
-                MaskOp::Char(ch) => Charset::from_chars(vec![ch as u8].as_ref()),
-                MaskOp::BuiltinCharset(ch) => Charset::from_symbol(ch),
-                MaskOp::CustomCharset(idx) => Charset::from_chars(custom_charsets[idx].as_bytes()),
+                MaskOp::Char(ch) => Charset::from_chars(vec![*ch as u8].as_ref()),
+                MaskOp::BuiltinCharset(ch) => Charset::from_symbol(*ch),
+                MaskOp::CustomCharset(idx) => Charset::from_chars(custom_charsets[*idx].as_bytes()),
                 MaskOp::Wordlist(_) => unreachable!("cant handle wordlists"),
             })
             .collect();
@@ -168,13 +152,11 @@ impl<'a> CharsetGenerator<'a> {
     }
 }
 
-impl<'a> WordGenerator for CharsetGenerator<'a> {
+impl<'a> WordGenerator for CharsetGenerator {
     /// generates all words into the output buffer `out`
-    fn gen<'b>(&self, out: Option<Box<dyn Write + 'b>>) -> Result<(), std::io::Error> {
-        let mut out = out.unwrap_or_else(|| Box::new(io::stdout()));
-
+    fn gen<'b>(&self, out: &mut Box<dyn Write + 'b>) -> Result<(), std::io::Error> {
         for pwdlen in self.minlen..=self.maxlen {
-            self.gen_by_length(pwdlen, &mut out)?;
+            self.gen_by_length(pwdlen, out)?;
         }
         Ok(())
     }
@@ -188,39 +170,35 @@ impl<'a> WordGenerator for CharsetGenerator<'a> {
                 .iter()
                 .take(i)
                 .fold(1.to_biguint().unwrap(), |acc, x| {
-                    (acc * x.chars.len()).to_biguint().unwrap()
+                    (acc * x.len).to_biguint().unwrap()
                 });
         }
         combs
     }
 }
 
-impl<'a> WordlistGenerator<'a> {
+impl<'a> WordlistGenerator {
     pub fn new(
-        mask: &'a str,
+        mask: Vec<MaskOp>,
         wordlists_fnames: &[&'a str],
         custom_charsets: &[&'a str],
-    ) -> BoxResult<WordlistGenerator<'a>> {
-        let mask_ops = parse_mask(mask)?;
-
-        // TODO: split to functions
+    ) -> BoxResult<WordlistGenerator> {
         let mut wordlists_data = vec![];
         for fname in wordlists_fnames.iter() {
             wordlists_data.push(Rc::new(Wordlist::from_file(fname)?));
         }
 
-        // TODO: return error from custom_charset not in index & invalid symbol
-        let items: Vec<WordlistItem> = mask_ops
-            .into_iter()
+        let items: Vec<WordlistItem> = mask
+            .iter()
             .map(|op| match op {
                 MaskOp::Char(ch) => {
-                    WordlistItem::Charset(Charset::from_chars(vec![ch as u8].as_ref()))
+                    WordlistItem::Charset(Charset::from_chars(vec![*ch as u8].as_ref()))
                 }
-                MaskOp::BuiltinCharset(ch) => WordlistItem::Charset(Charset::from_symbol(ch)),
+                MaskOp::BuiltinCharset(ch) => WordlistItem::Charset(Charset::from_symbol(*ch)),
                 MaskOp::CustomCharset(idx) => {
-                    WordlistItem::Charset(Charset::from_chars(custom_charsets[idx].as_bytes()))
+                    WordlistItem::Charset(Charset::from_chars(custom_charsets[*idx].as_bytes()))
                 }
-                MaskOp::Wordlist(idx) => WordlistItem::Wordlist(Rc::clone(&wordlists_data[idx])),
+                MaskOp::Wordlist(idx) => WordlistItem::Wordlist(Rc::clone(&wordlists_data[*idx])),
             })
             .collect();
 
@@ -283,11 +261,13 @@ impl<'a> WordlistGenerator<'a> {
                             continue 'outer_loop;
                         }
 
-                        // on debug build we have overflow checks
+                        // on debug build we have overflow checks - but we dont care
+                        // from overflow in this case its the rightmost position
                         if cfg!(debug_assertions) && pos == 0 {
-                            break 'outer_loop;
+                            pos = 0;
+                        } else {
+                            pos -= 1;
                         }
-                        pos -= 1;
                     }
                     Position::WordlistPos { wordlist, idx } => {
                         let finished;
@@ -310,9 +290,16 @@ impl<'a> WordlistGenerator<'a> {
                         if prev_len != wlen {
                             let offset = wlen as isize - prev_len as isize;
 
-                            // copy by offset
-                            for i in (pos + 1..word_len).rev() {
-                                word[(i as isize + offset) as usize] = word[i];
+                            // copy by offset - because we have overlapping pointers we either
+                            // start from last to first or vice versa
+                            if offset > 0 {
+                                for i in (pos + 1..word_len).rev() {
+                                    word[i + offset as usize] = word[i];
+                                }
+                            } else {
+                                for i in pos + 1..word_len {
+                                    word[(i as isize + offset) as usize] = word[i];
+                                }
                             }
 
                             // update current position & wordlien by offset
@@ -320,16 +307,19 @@ impl<'a> WordlistGenerator<'a> {
                             word_len = (word_len as isize + offset) as usize;
                         }
 
+                        // copy the next word to the adjusted buffer
                         word[pos + 1 - wlen..=pos].copy_from_slice(wordlist_word);
-                        // on debug build we have overflow checks
+
+                        if !finished {
+                            continue 'outer_loop;
+                        }
+
+                        // on debug build we have overflow checks - but we dont care
+                        // from overflow in this case its the rightmost position
                         if cfg!(debug_assertions) && pos < wlen {
                             pos = 0;
                         } else {
                             pos -= wlen;
-                        }
-
-                        if !finished {
-                            continue 'outer_loop;
                         }
                     }
                 }
@@ -343,12 +333,10 @@ impl<'a> WordlistGenerator<'a> {
     }
 }
 
-impl<'a> WordGenerator for WordlistGenerator<'a> {
+impl<'a> WordGenerator for WordlistGenerator {
     /// generates all words into the output buffer `out`
-    fn gen<'b>(&self, out: Option<Box<dyn Write + 'b>>) -> Result<(), std::io::Error> {
-        let mut out = out.unwrap_or_else(|| Box::new(io::stdout()));
-
-        self.gen_words(&mut out)?;
+    fn gen<'b>(&self, out: &mut Box<dyn Write + 'b>) -> Result<(), std::io::Error> {
+        self.gen_words(out)?;
         Ok(())
     }
 
@@ -357,7 +345,7 @@ impl<'a> WordGenerator for WordlistGenerator<'a> {
             .iter()
             .map(|item| match item {
                 WordlistItem::Wordlist(wl) => wl.len().to_biguint().unwrap(),
-                WordlistItem::Charset(c) => c.chars.len().to_biguint().unwrap(),
+                WordlistItem::Charset(c) => c.len.to_biguint().unwrap(),
             })
             .product()
     }
@@ -366,19 +354,20 @@ impl<'a> WordGenerator for WordlistGenerator<'a> {
 #[cfg(test)]
 mod tests {
     use std::fs;
-    use std::io::Cursor;
+    use std::io::{Cursor, Write};
 
     use num_bigint::{BigUint, ToBigUint};
 
     use crate::generators::get_word_generator;
+    use crate::mask::parse_mask;
     use crate::test_util::wordlist_fname;
 
     use super::{CharsetGenerator, WordGenerator};
 
     #[test]
     fn test_gen_words_single_digit() {
-        let mask = "?d";
-        let word_gen = CharsetGenerator::new(mask, None, None, &vec![]).unwrap();
+        let mask = parse_mask("?d").unwrap();
+        let word_gen = CharsetGenerator::new(mask.to_vec(), None, None, &vec![]).unwrap();
 
         assert_eq!(word_gen.mask, mask);
         assert_eq!(word_gen.minlen, 1);
@@ -394,8 +383,8 @@ mod tests {
 
     #[test]
     fn test_gen_upper_lower_1_4() {
-        let mask = "?u?l?u?l";
-        let word_gen = CharsetGenerator::new(mask, Some(1), None, &vec![]).unwrap();
+        let mask = parse_mask("?u?l?u?l").unwrap();
+        let word_gen = CharsetGenerator::new(mask.to_vec(), Some(1), None, &vec![]).unwrap();
 
         assert_eq!(word_gen.mask, mask);
         assert_eq!(word_gen.minlen, 1);
@@ -408,8 +397,8 @@ mod tests {
 
     #[test]
     fn test_gen_pwd_upper_lower_year_1_4() {
-        let mask = "pwd?u?l201?1";
-        let word_gen = CharsetGenerator::new(mask, Some(1), None, &vec!["56789"]).unwrap();
+        let mask = parse_mask("pwd?u?l201?1").unwrap();
+        let word_gen = CharsetGenerator::new(mask.to_vec(), Some(1), None, &vec!["56789"]).unwrap();
 
         assert_eq!(word_gen.mask, mask);
         assert_eq!(word_gen.minlen, 1);
@@ -418,16 +407,6 @@ mod tests {
         assert_eq!(word_gen.min_word, "pwdAa2015".as_bytes());
 
         assert_gen(Box::new(word_gen), "upper-lower-year-1-4.txt");
-    }
-
-    #[test]
-    fn test_invalid_custom_charset() {
-        let result = CharsetGenerator::new("?1", None, None, &vec![]);
-
-        assert_eq!(
-            result.err().unwrap().to_string(),
-            "mask contains ?1 charset but only 0 custom charsets defined",
-        );
     }
 
     #[test]
@@ -477,10 +456,32 @@ mod tests {
         assert_gen(word_gen, "wordlists-mix.txt");
     }
 
+    #[test]
+    fn test_word_generator_invalid_wordlist_mask() {
+        let mask = "?w1?d?w2?l?w1?1";
+        let wordlist1 = wordlist_fname("wordlist1.txt");
+        let charsets = vec!["!@#"];
+        let wordlists = vec![wordlist1.to_str().unwrap()];
+
+        let word_gen = get_word_generator(mask, None, None, charsets.as_ref(), wordlists.as_ref());
+        assert!(word_gen.is_err());
+    }
+
+    #[test]
+    fn test_word_generator_invalid_custom_charset_mask() {
+        let mask = "a?1?2?l?3";
+        let charsets = vec!["!@#", "abc"];
+
+        let word_gen = get_word_generator(mask, None, None, charsets.as_ref(), vec![].as_ref());
+        assert!(word_gen.is_err());
+    }
+
     fn assert_gen<'a>(w: Box<dyn WordGenerator + 'a>, fname: &str) -> String {
         let mut buf: Vec<u8> = Vec::new();
-        let mut cur = Cursor::new(&mut buf);
-        w.gen(Some(Box::new(&mut cur))).unwrap();
+        {
+            let mut cur: Box<dyn Write> = Box::new(Cursor::new(&mut buf));
+            w.gen(&mut cur).unwrap();
+        }
 
         let result = String::from_utf8(buf).unwrap();
         let expected = fs::read_to_string(wordlist_fname(fname)).unwrap();
@@ -513,7 +514,8 @@ mod tests {
             ),
         ];
 
-        for (mask, result, minlen, maxlen) in combinations {
+        for (mask_str, result, minlen, maxlen) in combinations {
+            let mask = parse_mask(mask_str).unwrap();
             let word_gen = CharsetGenerator::new(mask, minlen, maxlen, &custom_charsets).unwrap();
             assert_eq!(
                 word_gen.combinations(),

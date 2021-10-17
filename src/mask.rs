@@ -9,6 +9,17 @@ pub enum MaskOp {
     Wordlist(usize),
 }
 
+impl Clone for MaskOp {
+    fn clone(&self) -> Self {
+        match self {
+            MaskOp::Char(ch) => MaskOp::Char(*ch),
+            MaskOp::BuiltinCharset(ch) => MaskOp::BuiltinCharset(*ch),
+            MaskOp::CustomCharset(idx) => MaskOp::CustomCharset(*idx),
+            MaskOp::Wordlist(idx) => MaskOp::Wordlist(*idx),
+        }
+    }
+}
+
 /// parses `mask` string into the operations it means
 pub fn parse_mask(mask: &str) -> BoxResult<Vec<MaskOp>> {
     if !is_valid_mask(mask) {
@@ -50,13 +61,57 @@ pub fn parse_mask(mask: &str) -> BoxResult<Vec<MaskOp>> {
     Ok(mask_ops)
 }
 
+pub fn validate_charsets(mask: &[MaskOp], customer_charests_len: usize) -> BoxResult<()> {
+    let max_charset_len = mask
+        .iter()
+        .filter_map(|op| match op {
+            MaskOp::CustomCharset(idx) => Some(idx),
+            _ => None,
+        })
+        .max();
+    match max_charset_len {
+        None => {}
+        Some(&n) => {
+            if n >= customer_charests_len {
+                bail!(
+                    "mask contains unspecified custom charset: ?{} - please add use -c \"<chars>\"",
+                    n + 1
+                );
+            }
+        }
+    }
+    Ok(())
+}
+
+pub fn validate_wordlists(mask: &[MaskOp], wordlists_len: usize) -> BoxResult<()> {
+    let max_wordlist_len = mask
+        .iter()
+        .filter_map(|op| match op {
+            MaskOp::Wordlist(idx) => Some(idx),
+            _ => None,
+        })
+        .max();
+    match max_wordlist_len {
+        None => {}
+        Some(&n) => {
+            if n >= wordlists_len {
+                bail!(
+                    "mask contains unspecified wordlist: ?w{} - please add -w <wordlist_file>",
+                    n + 1
+                );
+            }
+        }
+    }
+    Ok(())
+}
+
 /// returns true iff the mask is valid
 fn is_valid_mask(mask: &str) -> bool {
     lazy_static! {
         static ref RE: Regex = Regex::new(
             format!(
                 r"^(\?[ludsab1-9]|\?w[1-9]|\\.|[^?\\]){{1,{}}}$",
-                MAX_WORD_SIZE
+                MAX_WORD_SIZE - 1
             )
             .as_str()
         )

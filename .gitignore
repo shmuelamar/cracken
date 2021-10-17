@@ -3,3 +3,4 @@
 tarpaulin-report.html
 .idea
 /build
+benchmarks/tools/

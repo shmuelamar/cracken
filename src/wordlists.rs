@@ -39,8 +39,8 @@ impl Wordlist {
                     let lenvec = len2words.entry(word.len()).or_insert_with(Vec::new);
                     lenvec.extend_from_slice(&word);
 
-                    // avoid over allocating memory for large wordlists
-                    lenvec.reserve_exact(word.len() * 1024 * 1024);
+                    // avoid small allocations of memory for large wordlists
+                    lenvec.reserve(word.len() * 1024 * 1024);
                 }
                 Ok(())
             })?;

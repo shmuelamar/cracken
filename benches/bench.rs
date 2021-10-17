@@ -4,7 +4,7 @@ extern crate criterion;
 
 use std::time::Duration;
 
-use criterion::{Benchmark, Criterion, Throughput};
+use criterion::{Criterion, Throughput};
 
 use cracken::runner;
 use std::path;
@@ -18,25 +18,30 @@ fn bench_4mixed(c: &mut Criterion) {
 }
 
 fn bench_8digits_tp(c: &mut Criterion) {
+    let mut group = c.benchmark_group("8digits_tp");
     let n_elements = 100_000_000;
     let item_len = 9;
-    let bencher = Benchmark::new("8digits_tp", |b| {
-        b.iter(|| run_bench(vec!["?d?d?d?d?d?d?d?d"]))
-    })
-    .throughput(Throughput::Bytes(n_elements * item_len))
-    .sample_size(10)
-    .warm_up_time(Duration::new(1, 0));
-    c.bench("throughput", bencher);
-}
-
-fn bench_6lower_tp(c: &mut Criterion) {
-    let n_elements = 308_915_776; // 26 ** 6
-    let item_len = 7;
-    let bencher = Benchmark::new("6lower_tp", |b| b.iter(|| run_bench(vec!["?l?l?l?l?l?l"])))
+    group
+        .bench_function("8digits_tp", |b| {
+            b.iter(|| run_bench(vec!["?d?d?d?d?d?d?d?d"]))
+        })
         .throughput(Throughput::Bytes(n_elements * item_len))
         .sample_size(10)
         .warm_up_time(Duration::new(1, 0));
-    c.bench("throughput", bencher);
+    group.finish();
+    // c.bench("throughput", bencher);
+}
+
+fn bench_6lower_tp(c: &mut Criterion) {
+    let mut group = c.benchmark_group("6lower_tp");
+    let n_elements = 308_915_776; // 26 ** 6
+    let item_len = 7;
+    group
+        .bench_function("6lower_tp", |b| b.iter(|| run_bench(vec!["?l?l?l?l?l?l"])))
+        .throughput(Throughput::Bytes(n_elements * item_len))
+        .sample_size(10)
+        .warm_up_time(Duration::new(1, 0));
+    group.finish();
 }
 
 fn bench_wordlist_simple(c: &mut Criterion) {
@@ -67,26 +72,28 @@ fn bench_wordlist_and_custom_charset(c: &mut Criterion) {
 }
 
 fn bench_wordlists_charset_tp(c: &mut Criterion) {
+    let mut group = c.benchmark_group("wordlists_charset_tp");
     let bytes_size = 20_576_400;
-    let bencher = Benchmark::new("wordlists_charset_tp", |b| {
-        b.iter(|| {
-            let w1 = wordlist_fname("wordlist1.txt");
-            let w2 = wordlist_fname("wordlist2.txt");
-            run_bench(vec![
-                "-w",
-                w1.as_str(),
-                "-w",
-                w2.as_str(),
-                "-c",
-                "!@#",
-                "?w1?d?w2?l?w1?1",
-            ])
+    group
+        .bench_function("wordlists_charset_tp", |b| {
+            b.iter(|| {
+                let w1 = wordlist_fname("wordlist1.txt");
+                let w2 = wordlist_fname("wordlist2.txt");
+                run_bench(vec![
+                    "-w",
+                    w1.as_str(),
+                    "-w",
+                    w2.as_str(),
+                    "-c",
+                    "!@#",
+                    "?w1?d?w2?l?w1?1",
+                ])
+            })
         })
-    })
-    .throughput(Throughput::Bytes(bytes_size))
-    .sample_size(10)
-    .warm_up_time(Duration::new(1, 0));
-    c.bench("throughput", bencher);
+        .throughput(Throughput::Bytes(bytes_size))
+        .sample_size(10)
+        .warm_up_time(Duration::new(1, 0));
+    group.finish();
 }
 
 fn wordlist_fname(fname: &str) -> String {
