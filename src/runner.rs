@@ -8,6 +8,7 @@ use simple_error::SimpleError;
 use crate::create_smartlist::{SmartlistBuilder, SmartlistTokenizer};
 use crate::generators::get_word_generator;
 use crate::helpers::RawFileReader;
+use crate::one_of_validator;
 use crate::password_entropy::EntropyEstimator;
 use crate::{built_info, BoxResult};
 
@@ -165,7 +166,16 @@ available masks are:
             .takes_value(true)
             .required(false),
     )).subcommand(SubCommand::with_name("entropy")
-        .about("Computes the estimated entropy of password or password file.\nThe entropy of a password is the log2(len(keyspace)) of the password")
+        .about(r#"
+Computes the estimated entropy of password or password file.
+The entropy of a password is the log2(len(keyspace)) of the password.
+
+There are two type of keyspace size estimations:
+  * mask - keyspace of each char (digit=10, lowercase=26...).
+  * subword - finding minimal split into subwords given a sorted by frequency smartlist and multiply the word ranks (line number in the smarlist).
+  * min - minimum between the two above.
+
+"#)
         .arg(
         Arg::with_name("smartlist")
             .short("f")
@@ -194,6 +204,15 @@ available masks are:
             .takes_value(false)
             .required(false)
             .conflicts_with("password"),
+        ).arg(
+        Arg::with_name("entropy_type")
+            .short("t")
+            .long("entropy-type")
+            .help("type of entropy to output, one of: mask, subword, min (minimum between the two, the default)")
+            .takes_value(true)
+            .required(false)
+            .validator(one_of_validator!(vec!["min", "subword", "mask"], "entropy type must be one of: min,subword,mask"))
+            .conflicts_with("password"),
         )
     ).subcommand(SubCommand::with_name("create")
         .about("Create a new smartlist from input file(s)")
@@ -220,8 +239,7 @@ available masks are:
             .long("tokenizer")
             .help("tokenizer to use, can be specified multiple times.\none of: bpe,unigram,wordpiece")
             .takes_value(true)
-            // TODO: constant or better way to validate without boilerplate
-            .validator(|s| if vec!["bpe", "unigram", "wordpiece"].contains(&s.as_str()) {Ok(())} else {Err("tokenizers must be one of: bpe,unigram,wordpiece".to_string())})
+            .validator(one_of_validator!(vec!["bpe", "unigram", "wordpiece"], "tokenizers must be one of: bpe,unigram,wordpiece"))
             .required(false)
             .multiple(true)
             .default_value("unigram")
@@ -341,16 +359,30 @@ pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
     let smartlist_file = args.value_of("smartlist").unwrap();
     let est = EntropyEstimator::from_file(smartlist_file)?;
     let is_summary_only = args.is_present("summary");
+    let entropy_type = args.value_of("entropy_type").unwrap_or("min");
     let mut total_entropy = 0f64;
     let mut pwd_count = 0usize;
 
     if let Some(pwd) = args.value_of("password") {
-        println!("{}", est.compute_password_min_entropy(pwd.as_bytes())?);
+        let entropy_result = est.compute_password_min_entropy(pwd.as_bytes())?;
+        println!("min-entropy: {}", entropy_result.min_entropy);
+        println!("subword-entropy: {}", entropy_result.subword_entropy);
+        println!(
+            "subword-entropy-minimal-split: {:?}",
+            entropy_result.subword_entropy_min_split
+        );
+        println!("mask-entropy: {}", entropy_result.mask_entropy);
     } else if let Some(pwd_file) = args.value_of("passwords-file") {
         let file = File::open(pwd_file)?;
         let reader = RawFileReader::new(file);
         for pwd in reader.into_iter() {
-            let pwd_entropy = est.compute_password_min_entropy(&pwd?)?;
+            let entropy_result = est.compute_password_min_entropy(&pwd?)?;
+            let pwd_entropy = match entropy_type {
+                "subword" => entropy_result.subword_entropy,
+                "mask" => entropy_result.mask_entropy,
+                "min" => entropy_result.min_entropy,
+                _ => unreachable!("oopsie"),
+            };
             if !is_summary_only {
                 println!("{}", pwd_entropy);
             } else {

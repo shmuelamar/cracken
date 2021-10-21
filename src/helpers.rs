@@ -30,6 +30,20 @@ impl<R: Read> Iterator for RawFileReader<R> {
     }
 }
 
+/// creates validator function for one of the given allowed_values
+#[macro_export]
+macro_rules! one_of_validator {
+    ($allowed_values:expr, $error_msg: expr) => {
+        |s| {
+            if $allowed_values.contains(&s.as_str()) {
+                Ok(())
+            } else {
+                Err($error_msg.to_string())
+            }
+        }
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use std::fs::File;

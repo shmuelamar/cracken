@@ -15,6 +15,14 @@ pub struct EntropyEstimator {
     word2entropy: HashMap<Vec<u8>, OrderedFloat<f64>>,
 }
 
+#[derive(PartialEq, Debug)]
+pub struct PasswordEntropyResult {
+    pub min_entropy: f64,
+    pub mask_entropy: f64,
+    pub subword_entropy: f64,
+    pub subword_entropy_min_split: Vec<String>,
+}
+
 impl EntropyEstimator {
     pub fn from_file<P: AsRef<Path>>(filename: P) -> BoxResult<Self> {
         Ok(EntropyEstimator {
@@ -22,10 +30,17 @@ impl EntropyEstimator {
         })
     }
 
-    pub fn compute_password_min_entropy(&self, pwd: &[u8]) -> BoxResult<f64> {
-        let cost1 = self.compute_password_subword_entropy(pwd)?.0;
-        let cost2 = password_mask_cost(pwd);
-        Ok(cost1.min(cost2))
+    pub fn compute_password_min_entropy(&self, pwd: &[u8]) -> BoxResult<PasswordEntropyResult> {
+        let (subword_entropy, subword_entropy_min_split) =
+            self.compute_password_subword_entropy(pwd)?;
+        let mask_entropy = password_mask_entropy(pwd);
+        let min_entropy = subword_entropy.min(mask_entropy);
+        Ok(PasswordEntropyResult {
+            min_entropy,
+            mask_entropy,
+            subword_entropy,
+            subword_entropy_min_split,
+        })
     }
 
     pub fn compute_password_subword_entropy(&self, pwd: &[u8]) -> BoxResult<(f64, Vec<String>)> {
@@ -83,7 +98,7 @@ impl EntropyEstimator {
     }
 }
 
-pub fn password_mask_cost(pwd: &[u8]) -> f64 {
+pub fn password_mask_entropy(pwd: &[u8]) -> f64 {
     pwd.iter()
         .map(|ch| {
             if ch.is_ascii_digit() {
@@ -101,8 +116,8 @@ pub fn password_mask_cost(pwd: &[u8]) -> f64 {
 
 #[cfg(test)]
 mod tests {
-    use crate::password_entropy::password_mask_cost;
     use crate::password_entropy::EntropyEstimator;
+    use crate::password_entropy::{password_mask_entropy, PasswordEntropyResult};
     use crate::test_util::wordlist_fname;
 
     #[test]
@@ -130,32 +145,32 @@ mod tests {
         let pwd = "helloworld123!helloworld123!helloworld123!";
         let fname = wordlist_fname("vocab.txt");
         let est = EntropyEstimator::from_file(fname).unwrap();
+        let min_split = vec![
+            "helloworld",
+            "123",
+            "!",
+            "helloworld",
+            "123",
+            "!",
+            "helloworld",
+            "123",
+            "!",
+        ]
+        .into_iter()
+        .map(String::from)
+        .collect::<Vec<String>>();
         let res = est
             .compute_password_subword_entropy(pwd.as_bytes())
             .unwrap();
-        assert_eq!(
-            res,
-            (
-                92.46918260193678,
-                vec![
-                    "helloworld",
-                    "123",
-                    "!",
-                    "helloworld",
-                    "123",
-                    "!",
-                    "helloworld",
-                    "123",
-                    "!"
-                ]
-                .into_iter()
-                .map(String::from)
-                .collect()
-            ),
-        );
+        assert_eq!(res, (92.46918260193678, min_split.to_vec(),),);
         assert_eq!(
             est.compute_password_min_entropy(pwd.as_bytes()).unwrap(),
-            92.46918260193678
+            PasswordEntropyResult {
+                min_entropy: 92.46918260193678,
+                mask_entropy: 185.91054439821917,
+                subword_entropy: 92.46918260193678,
+                subword_entropy_min_split: min_split,
+            }
         );
     }
 
@@ -163,27 +178,27 @@ mod tests {
     fn test_compute_password_entropy_random_password() {
         let pwd = "E93gtaaE6yF7xDOWv3ww2QE6qD-Wye4mk8O3Vaerem8";
         let fname = wordlist_fname("vocab.txt");
+        let min_split = vec![
+            "E", "9", "3", "g", "t", "a", "a", "E", "6", "y", "F", "7", "x", "DOW", "v", "3", "w",
+            "w", "2", "QE", "6", "q", "D-", "W", "y", "e", "4", "m", "k", "8", "O", "3", "V", "a",
+            "e", "r", "e", "m", "8",
+        ]
+        .into_iter()
+        .map(String::from)
+        .collect::<Vec<String>>();
         let est = EntropyEstimator::from_file(fname).unwrap();
         let res = est
             .compute_password_subword_entropy(pwd.as_bytes())
             .unwrap();
-        assert_eq!(
-            res,
-            (
-                206.14950164576396,
-                vec![
-                    "E", "9", "3", "g", "t", "a", "a", "E", "6", "y", "F", "7", "x", "DOW", "v",
-                    "3", "w", "w", "2", "QE", "6", "q", "D-", "W", "y", "e", "4", "m", "k", "8",
-                    "O", "3", "V", "a", "e", "r", "e", "m", "8"
-                ]
-                .into_iter()
-                .map(String::from)
-                .collect()
-            ),
-        );
+        assert_eq!(res, (206.14950164576396, min_split.to_vec(),),);
         assert_eq!(
             est.compute_password_min_entropy(pwd.as_bytes()).unwrap(),
-            187.25484030613498
+            PasswordEntropyResult {
+                min_entropy: 187.25484030613498,
+                mask_entropy: 187.25484030613498,
+                subword_entropy: 206.14950164576396,
+                subword_entropy_min_split: min_split,
+            }
         );
     }
 
@@ -200,7 +215,7 @@ mod tests {
             ),
         ];
         for (pwd, expected_cost) in cases {
-            assert_eq!(password_mask_cost(pwd.as_bytes()), expected_cost);
+            assert_eq!(password_mask_entropy(pwd.as_bytes()), expected_cost);
         }
     }
 }

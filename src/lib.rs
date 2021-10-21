@@ -2,7 +2,7 @@
 extern crate clap;
 #[macro_use(lazy_static)]
 extern crate lazy_static;
-#[macro_use]
+#[macro_use(bail)]
 extern crate simple_error;
 extern crate regex;
 
