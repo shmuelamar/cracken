@@ -3,7 +3,6 @@ use std::fs::File;
 use std::io::{BufWriter, ErrorKind, Write};
 
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
-use simple_error::SimpleError;
 
 use crate::create_smartlist::{SmartlistBuilder, SmartlistTokenizer};
 use crate::generators::get_word_generator;
@@ -234,6 +233,13 @@ There are two type of keyspace size estimations:
             .required(true)
         )
         .arg(
+            Arg::with_name("full_smartlist")
+            .long("full-smartlist")
+            .help("output full smartlist filename. will write full (unfiltered) smartlist to this file")
+            .takes_value(true)
+            .required(false)
+        )
+        .arg(
         Arg::with_name("tokenizer")
             .short("t")
             .long("tokenizer")
@@ -263,7 +269,6 @@ There are two type of keyspace size estimations:
         )
         .arg(
             Arg::with_name("min_frequency")
-            .short("min-frequency")
             .long("min-frequency")
             .help("minimum frequency of a word, relevant only for BPE tokenizer")
             .takes_value(false)
@@ -286,6 +291,15 @@ There are two type of keyspace size estimations:
             .required(false)
             .default_value("")
         )
+        .arg(
+            Arg::with_name("min_word_len")
+            .long("min-word-len")
+            .short("l")
+            .help("filters words shorter than the specified length")
+            .takes_value(true)
+            .required(false)
+            .default_value("1")
+        )
     )
     .get_matches_from(args)
 }
@@ -295,15 +309,10 @@ pub fn run(args: Option<Vec<&str>>) -> BoxResult<()> {
     let arg_matches = parse_args(args);
 
     match arg_matches.subcommand() {
-        ("generate", matches) => {
-            run_wordlist_generator(matches.ok_or_else(|| SimpleError::new("invalid command"))?)
-        }
-        ("entropy", matches) => {
-            run_entropy_estimator(matches.ok_or_else(|| SimpleError::new("invalid command"))?)
-        }
-        ("create", matches) => {
-            run_create_smartlist(matches.ok_or_else(|| SimpleError::new("invalid command"))?)
-        }
+        ("generate", Some(matches)) => run_wordlist_generator(matches),
+        ("entropy", Some(matches)) => run_entropy_estimator(matches),
+        ("create", Some(matches)) => run_create_smartlist(matches),
+        (_, None) => bail!("invalid command"),
         _ => unreachable!("oopsie, subcommand is required"),
     }
 }
@@ -400,31 +409,35 @@ pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
 
 pub fn run_create_smartlist(args: &ArgMatches) -> BoxResult<()> {
     let outfile = args.value_of("smartlist").unwrap();
+    let full_outfile = args.value_of("full_smartlist");
     let infiles = args.values_of("file").map(|x| x.collect()).unwrap();
     // TODO: from config or optional or if let
+    // TODO: value_t! does not raise in case of invalid value
     let vocab_max_size = value_t!(args.value_of("vocab_max_size"), u32).unwrap_or(10_000);
     let min_frequency = value_t!(args.value_of("min_frequency"), u32).unwrap_or(10_000);
     let print_progress = !args.is_present("quiet");
     let numbers_max_size = value_t!(args.value_of("numbers_max_size"), u32).ok();
     let overlapping_word_max_size = value_t!(args.value_of("overlapping_word_max_size"), u32).ok();
+    let min_word_len = value_t!(args.value_of("min_word_len"), u32).unwrap_or(1);
 
     let tokenizers = args
         .values_of("tokenizer")
         .map(|x| x.collect())
-        .unwrap_or(vec!["unigram"])
-        .iter()
-        .map(|&x| {
-            match x {
-                "bpe" => SmartlistTokenizer::BPE,
-                "unigram" => SmartlistTokenizer::Unigram,
-                "wordpiece" => SmartlistTokenizer::WordPiece,
-                _ => unreachable!("invalid tokenizer {}", x), // TODO: we need to ensure these values
-            }
-        })
-        .collect::<Vec<_>>();
+        .unwrap_or_else(|| vec!["unigram"])
+        .into_iter()
+        .map(|x| match x {
+            "bpe" => SmartlistTokenizer::BPE,
+            "unigram" => SmartlistTokenizer::Unigram,
+            "wordpiece" => SmartlistTokenizer::WordPiece,
+            _ => unreachable!("invalid tokenizer {}", x),
+        });
 
     let mut writer = BufWriter::new(File::create(outfile)?);
-    let vocab = SmartlistBuilder::new()
+    let full_writer = match full_outfile {
+        Some(full_outfile_path) => Some(BufWriter::new(File::create(full_outfile_path)?)),
+        None => None,
+    };
+    let (vocab, full_vocab) = SmartlistBuilder::new()
         .infiles(infiles)
         .min_frequency(min_frequency)
         .vocab_max_size(vocab_max_size)
@@ -432,12 +445,22 @@ pub fn run_create_smartlist(args: &ArgMatches) -> BoxResult<()> {
         .print_progress(print_progress)
         .numbers_max_size(numbers_max_size)
         .overlapping_word_max_size(overlapping_word_max_size)
+        .min_word_len(min_word_len)
+        .return_full_vocab(full_outfile.is_some())
         .build()?;
 
     // write to file
     for word in vocab.iter() {
         writer.write_all(word.as_bytes())?;
         writer.write_all(b"\n")?;
+    }
+
+    // write to file full vocab
+    if let (Some(full_vocab), Some(mut full_writer)) = (full_vocab, full_writer) {
+        for word in full_vocab.iter() {
+            full_writer.write_all(word.as_bytes())?;
+            full_writer.write_all(b"\n")?;
+        }
     }
     Ok(())
 }

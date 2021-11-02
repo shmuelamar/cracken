@@ -37,6 +37,8 @@ pub struct SmartlistBuilder<P: AsRef<Path>> {
     print_progress: bool,
     overlapping_word_max_size: Option<u32>,
     numbers_max_size: Option<u32>,
+    min_word_len: u32,
+    return_full_vocab: bool,
 }
 
 impl<P: AsRef<Path> + Sync> Default for SmartlistBuilder<P> {
@@ -49,6 +51,8 @@ impl<P: AsRef<Path> + Sync> Default for SmartlistBuilder<P> {
             print_progress: true,
             overlapping_word_max_size: None,
             numbers_max_size: None,
+            min_word_len: 1,
+            return_full_vocab: false,
         }
     }
 }
@@ -77,19 +81,24 @@ impl<P: AsRef<Path> + Sync> SmartlistBuilder<P> {
         self.print_progress = print_progress;
         self
     }
-
     pub fn numbers_max_size(mut self, numbers_max_size: Option<u32>) -> Self {
         self.numbers_max_size = numbers_max_size;
         self
     }
-
     pub fn overlapping_word_max_size(mut self, overlapping_word_max_size: Option<u32>) -> Self {
         self.overlapping_word_max_size = overlapping_word_max_size;
         self
     }
+    pub fn min_word_len(mut self, min_word_len: u32) -> Self {
+        self.min_word_len = min_word_len;
+        self
+    }
+    pub fn return_full_vocab(mut self, return_full_vocab: bool) -> Self {
+        self.return_full_vocab = return_full_vocab;
+        self
+    }
 
-    // TODO: our error type
-    pub fn build(&self) -> BoxResult<Vec<String>> {
+    pub fn build(&self) -> BoxResult<(Vec<String>, Option<Vec<String>>)> {
         let mut vocab = HashSet::with_capacity(self.vocab_max_size as usize);
         let mut tokenizers_types = self.tokenizers.iter().collect::<Vec<_>>();
         tokenizers_types.sort_unstable();
@@ -116,7 +125,15 @@ impl<P: AsRef<Path> + Sync> SmartlistBuilder<P> {
         // sort by frequency of words in original input files
         let mut vocab = self.sort_vocab(vocab);
 
+        let full_vocab = match self.return_full_vocab {
+            true => Some(vocab.to_vec()),
+            false => None,
+        };
+
         // apply filters
+        if self.min_word_len > 0 {
+            vocab = remove_shorter_than_len(vocab, self.min_word_len as usize);
+        }
         if let Some(numbers_max_size) = self.numbers_max_size {
             vocab = remove_long_numbers(vocab, numbers_max_size as usize);
         }
@@ -126,7 +143,7 @@ impl<P: AsRef<Path> + Sync> SmartlistBuilder<P> {
 
         // truncate to desired maxsize (or less)
         vocab.truncate(self.vocab_max_size as usize);
-        Ok(vocab)
+        Ok((vocab, full_vocab))
     }
 
     fn train_bpe(&self) -> tokenizers::Result<Vec<String>> {
@@ -260,6 +277,7 @@ pub fn remove_long_numbers(vocab: Vec<String>, max_len: usize) -> Vec<String> {
 }
 
 pub fn remove_long_overlapping(vocab: Vec<String>, min_len: usize) -> Vec<String> {
+    // TODO: we may remove words that overlap then remove the subword
     let long_words = vocab
         .to_vec()
         .into_iter()
@@ -277,6 +295,13 @@ pub fn remove_long_overlapping(vocab: Vec<String>, min_len: usize) -> Vec<String
         .collect::<Vec<String>>()
 }
 
+pub fn remove_shorter_than_len(vocab: Vec<String>, min_word_len: usize) -> Vec<String> {
+    vocab
+        .into_iter()
+        .filter(|s| !s.len() >= min_word_len)
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use crate::create_smartlist::{SmartlistBuilder, SmartlistTokenizer};
@@ -285,7 +310,7 @@ mod tests {
     #[test]
     fn test_run_smoke() {
         let fname = test_util::wordlist_fname("wordlist1.txt");
-        let vocab = SmartlistBuilder::new()
+        let (vocab, full_vocab) = SmartlistBuilder::new()
             .infiles(vec![fname.to_str().unwrap()])
             .min_frequency(0)
             .vocab_max_size(10)
@@ -298,9 +323,15 @@ mod tests {
                 .into_iter(),
             )
             .print_progress(true)
+            .return_full_vocab(true)
             .build()
             .unwrap();
+        let full_vocab = full_vocab.unwrap();
+
+        // TODO: asserts
         println!("{:?}", vocab);
         println!("{:?}", vocab.len());
+        println!("{:?}", full_vocab);
+        println!("{:?}", full_vocab.len());
     }
 }
