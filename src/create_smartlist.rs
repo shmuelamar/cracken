@@ -298,7 +298,7 @@ pub fn remove_long_overlapping(vocab: Vec<String>, min_len: usize) -> Vec<String
 pub fn remove_shorter_than_len(vocab: Vec<String>, min_word_len: usize) -> Vec<String> {
     vocab
         .into_iter()
-        .filter(|s| !s.len() >= min_word_len)
+        .filter(|s| s.len() >= min_word_len)
         .collect()
 }
 

@@ -1,13 +1,12 @@
 use std::env;
 use std::fs::File;
-use std::io::{BufWriter, ErrorKind, Write};
+use std::io::{BufRead, BufReader, BufWriter, ErrorKind, Write};
 
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
 use crate::create_smartlist::{SmartlistBuilder, SmartlistTokenizer};
 use crate::generators::get_word_generator;
 use crate::helpers::RawFileReader;
-use crate::one_of_validator;
 use crate::password_entropy::EntropyEstimator;
 use crate::{built_info, BoxResult};
 
@@ -99,7 +98,7 @@ available masks are:
     ?l - lowercase: "abcdefghijklmnopqrstuvwxyz"
     ?u - uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     ?s - symbols: " !\"\#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
-    ?a - all characters: "?d?l?u?s"
+    ?a - all characters: ?d + ?l + ?u + ?s
     ?b - all binary values: (0-255)
 
     custom charsets ?1 to ?9:
@@ -110,7 +109,14 @@ available masks are:
 "#,
             )
             .takes_value(true)
-            .required(true),
+            .required_unless("masks-file"),
+    )
+    .arg(Arg::with_name("masks-file")
+            .short("i")
+            .long("masks-file")
+            .help("a file containing masks to generate")
+            .takes_value(true)
+            .required_unless("mask"),
     )
     .arg(
         Arg::with_name("min-length")
@@ -181,12 +187,14 @@ There are two type of keyspace size estimations:
             .long("smartlist")
             .help("smartlist input file to estimate entropy with, a newline separated text file")
             .takes_value(true)
+            .multiple(true)
+            .number_of_values(1)
             .required(true),
         ).arg(
         Arg::with_name("password")
             .help("password to estimate entropy for")
             .takes_value(true)
-            .required(false),
+            .required_unless("passwords-file")
         ).arg(
         Arg::with_name("passwords-file")
             .short("p")
@@ -210,7 +218,7 @@ There are two type of keyspace size estimations:
             .help("type of entropy to output, one of: mask, subword, min (minimum between the two, the default)")
             .takes_value(true)
             .required(false)
-            .validator(one_of_validator!(vec!["min", "subword", "mask"], "entropy type must be one of: min,subword,mask"))
+            .possible_values(&["subword", "mask"])
             .conflicts_with("password"),
         )
     ).subcommand(SubCommand::with_name("create")
@@ -223,6 +231,7 @@ There are two type of keyspace size estimations:
             .takes_value(true)
             .required(true)
             .multiple(true)
+            .number_of_values(1)
         )
         .arg(
             Arg::with_name("smartlist")
@@ -245,9 +254,10 @@ There are two type of keyspace size estimations:
             .long("tokenizer")
             .help("tokenizer to use, can be specified multiple times.\none of: bpe,unigram,wordpiece")
             .takes_value(true)
-            .validator(one_of_validator!(vec!["bpe", "unigram", "wordpiece"], "tokenizers must be one of: bpe,unigram,wordpiece"))
+            .possible_values(&["bpe", "unigram", "wordpiece"])
             .required(false)
             .multiple(true)
+            .number_of_values(1)
             .default_value("unigram")
         )
         .arg(
@@ -318,7 +328,15 @@ pub fn run(args: Option<Vec<&str>>) -> BoxResult<()> {
 }
 
 pub fn run_wordlist_generator(args: &ArgMatches) -> BoxResult<()> {
-    let mask = args.value_of("mask").unwrap();
+    let masks = match args.value_of("mask") {
+        Some(mask) => vec![mask.to_owned()],
+        None => {
+            let masks_fname = args.value_of("masks-file").unwrap();
+            let file = BufReader::new(File::open(masks_fname)?);
+            let masks: Result<Vec<_>, _> = file.lines().collect();
+            masks?
+        }
+    };
 
     // TODO: result should fail on bad input not default value
     let minlen = value_t!(args.value_of("min-length"), usize).ok();
@@ -345,55 +363,75 @@ pub fn run_wordlist_generator(args: &ArgMatches) -> BoxResult<()> {
         .map(|x| x.collect())
         .unwrap_or_else(Vec::new);
 
-    let word_generator = get_word_generator(mask, minlen, maxlen, &custom_charsets, &wordlists)?;
-    if args.is_present("stats") {
-        let combs = word_generator.combinations();
-        println!("{}", combs);
-        return Ok(());
-    }
+    for mask in masks {
+        // create output file
+        let word_generator =
+            get_word_generator(&mask, minlen, maxlen, &custom_charsets, &wordlists)?;
+        if args.is_present("stats") {
+            let combs = word_generator.combinations();
+            println!("{}", combs);
+            return Ok(());
+        }
 
-    match word_generator.gen(out) {
-        Ok(_) => Ok(()),
-        Err(e) => {
-            match e.kind() {
-                // ignore broken pipe, (e.g. happens when using head)
-                ErrorKind::BrokenPipe => Ok(()),
-                _ => bail!("error occurred writing to out: {}", e),
+        match word_generator.gen(None) {
+            // FIXME: out
+            Ok(_) => {}
+            Err(e) => {
+                match e.kind() {
+                    // ignore broken pipe, (e.g. happens when using head)
+                    ErrorKind::BrokenPipe => return Ok(()),
+                    _ => bail!("error occurred writing to out: {}", e),
+                }
             }
         }
     }
+    Ok(())
 }
 
 pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
-    let smartlist_file = args.value_of("smartlist").unwrap();
-    let est = EntropyEstimator::from_file(smartlist_file)?;
+    let smartlist_files: Vec<&str> = args.values_of("smartlist").map(|x| x.collect()).unwrap();
+    let est = EntropyEstimator::from_files(smartlist_files.as_ref())?;
     let is_summary_only = args.is_present("summary");
-    let entropy_type = args.value_of("entropy_type").unwrap_or("min");
+    let entropy_type = args.value_of("entropy_type").unwrap_or("subword");
     let mut total_entropy = 0f64;
     let mut pwd_count = 0usize;
 
     if let Some(pwd) = args.value_of("password") {
-        let entropy_result = est.compute_password_min_entropy(pwd.as_bytes())?;
-        println!("min-entropy: {}", entropy_result.min_entropy);
+        let entropy_result = est.estimate_password_entropy(pwd.as_bytes())?;
         println!("subword-entropy: {}", entropy_result.subword_entropy);
         println!(
             "subword-entropy-minimal-split: {:?}",
             entropy_result.subword_entropy_min_split
         );
+        println!("min-subword-mask: {}", entropy_result.min_subword_mask);
         println!("mask-entropy: {}", entropy_result.mask_entropy);
     } else if let Some(pwd_file) = args.value_of("passwords-file") {
+        // TODO: either remove or implement as rayon
+        // let file = File::open(pwd_file)?;
+        // let reader = RawFileReader::new(file);
+        // let pwds = reader.into_iter().map(|x|x.unwrap()).collect::<Vec<_>>();
+        // let (total_pwds, total_cracked, total_entropy) = pwds.into_par_iter().map(|pwd| {
+        //     let ent = est.compute_password_subword_entropy(&pwd).expect("bad result").0;
+        //     (1usize, if ent < 50.0 {1usize} else {0usize}, ent)
+        // }).reduce(|| (0usize,0usize, 0f64), |(mut cnt, mut total_cracked, mut total_entropy), (cnt2, cracked2, entropy2)| {
+        //     cnt += cnt2;
+        //     total_entropy+=entropy2;
+        //     total_cracked+=cracked2;
+        //     (cnt, total_cracked, total_entropy)
+        // });
+        // println!("avg entropy: {:?} {}", total_entropy/(total_pwds as f64), total_cracked);
+
         let file = File::open(pwd_file)?;
         let reader = RawFileReader::new(file);
         for pwd in reader.into_iter() {
-            let entropy_result = est.compute_password_min_entropy(&pwd?)?;
+            let entropy_result = est.estimate_password_entropy(&pwd?)?;
             let pwd_entropy = match entropy_type {
                 "subword" => entropy_result.subword_entropy,
                 "mask" => entropy_result.mask_entropy,
-                "min" => entropy_result.min_entropy,
                 _ => unreachable!("oopsie"),
             };
             if !is_summary_only {
-                println!("{}", pwd_entropy);
+                println!("{:.2},{}", pwd_entropy, entropy_result.min_subword_mask);
             } else {
                 total_entropy += pwd_entropy;
             }

@@ -55,6 +55,7 @@ pub fn get_word_generator<'a>(
     custom_charsets: &[&'a str],
     wordlists_fnames: &[&'a str],
 ) -> BoxResult<Box<dyn WordGenerator + 'a>> {
+    // TODO: check mask and not the presence of wordlist
     if wordlists_fnames.is_empty() {
         Ok(Box::new(CharsetGenerator::new(
             mask,
@@ -283,10 +284,6 @@ impl<'a> WordlistGenerator<'a> {
                             continue 'outer_loop;
                         }
 
-                        // on debug build we have overflow checks
-                        if cfg!(debug_assertions) && pos == 0 {
-                            break 'outer_loop;
-                        }
                         pos -= 1;
                     }
                     Position::WordlistPos { wordlist, idx } => {
@@ -310,9 +307,16 @@ impl<'a> WordlistGenerator<'a> {
                         if prev_len != wlen {
                             let offset = wlen as isize - prev_len as isize;
 
-                            // copy by offset
-                            for i in (pos + 1..word_len).rev() {
-                                word[(i as isize + offset) as usize] = word[i];
+                            // copy by offset - because we have overlapping pointers we either
+                            // start from last to first or vice versa
+                            if offset > 0 {
+                                for i in (pos + 1..word_len).rev() {
+                                    word[i + offset as usize] = word[i];
+                                }
+                            } else {
+                                for i in pos + 1..word_len {
+                                    word[(i as isize + offset) as usize] = word[i];
+                                }
                             }
 
                             // update current position & wordlien by offset
@@ -320,13 +324,9 @@ impl<'a> WordlistGenerator<'a> {
                             word_len = (word_len as isize + offset) as usize;
                         }
 
+                        // copy the next word to the adjusted buffer
                         word[pos + 1 - wlen..=pos].copy_from_slice(wordlist_word);
-                        // on debug build we have overflow checks
-                        if cfg!(debug_assertions) && pos < wlen {
-                            pos = 0;
-                        } else {
-                            pos -= wlen;
-                        }
+                        pos -= wlen;
 
                         if !finished {
                             continue 'outer_loop;

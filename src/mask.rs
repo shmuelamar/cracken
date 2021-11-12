@@ -56,7 +56,7 @@ fn is_valid_mask(mask: &str) -> bool {
         static ref RE: Regex = Regex::new(
             format!(
                 r"^(\?[ludsab1-9]|\?w[1-9]|\\.|[^?\\]){{1,{}}}$",
-                MAX_WORD_SIZE
+                MAX_WORD_SIZE - 1
             )
             .as_str()
         )

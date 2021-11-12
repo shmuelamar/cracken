@@ -1,8 +1,8 @@
 use std::ops::Index;
 
 pub struct CharsetSymbol<'a> {
-    symbol: char,
-    chars: &'a [u8],
+    pub(crate) symbol: char,
+    pub(crate) chars: &'a [u8],
 }
 
 impl<'a> CharsetSymbol<'a> {
@@ -72,9 +72,9 @@ pub const SYMBOL2CHARSET: [CharsetSymbol; 6] = [
 ];
 
 pub struct Charset {
-    pub jmp_table: [u8; 256],
-    pub min_char: u8,
-    pub chars: Vec<u8>,
+    pub(crate) jmp_table: [u8; 256],
+    pub(crate) min_char: u8,
+    pub(crate) chars: Vec<u8>,
 }
 
 impl Index<usize> for Charset {

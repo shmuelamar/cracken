@@ -26,7 +26,7 @@ pub mod built_info {
 type BoxResult<T> = Result<T, Box<dyn Error>>;
 
 const BUFFER_SIZE: usize = 8192;
-pub const MAX_WORD_SIZE: usize = 128;
+pub const MAX_WORD_SIZE: usize = 512;
 
 #[cfg(test)]
 pub mod test_util {
