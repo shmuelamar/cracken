@@ -19,6 +19,7 @@ pub struct EntropyEstimator {
 #[derive(PartialEq, Debug)]
 pub struct PasswordEntropyResult {
     pub mask_entropy: f64,
+    pub charset_mask: String,
     pub subword_entropy: f64,
     pub min_subword_mask: String,
     pub subword_entropy_min_split: Vec<String>,
@@ -48,9 +49,10 @@ impl EntropyEstimator {
     pub fn estimate_password_entropy(&self, pwd: &[u8]) -> BoxResult<PasswordEntropyResult> {
         let (subword_entropy, subword_entropy_min_split, min_subword_mask) =
             self.compute_password_subword_entropy(pwd)?;
-        let mask_entropy = password_mask_entropy(pwd);
+        let (mask_entropy, charset_mask) = password_mask_entropy(pwd);
         Ok(PasswordEntropyResult {
             mask_entropy,
+            charset_mask,
             subword_entropy,
             min_subword_mask,
             subword_entropy_min_split,
@@ -123,20 +125,31 @@ impl EntropyEstimator {
     }
 }
 
-pub fn password_mask_entropy(pwd: &[u8]) -> f64 {
-    pwd.iter()
+pub fn password_mask_entropy(pwd: &[u8]) -> (f64, String) {
+    let mut mask = String::with_capacity(pwd.len() * 2);
+    let mask_entropy = pwd
+        .iter()
         .map(|ch| {
+            mask.push('?');
             if ch.is_ascii_digit() {
+                mask.push('d');
                 10f64.log2()
-            } else if ch.is_ascii_alphabetic() {
+            } else if ch.is_ascii_lowercase() {
+                mask.push('l');
+                26f64.log2()
+            } else if ch.is_ascii_uppercase() {
+                mask.push('u');
                 26f64.log2()
             } else if SYMBOLS_SPACE.contains(ch) {
+                mask.push('s');
                 (SYMBOLS_SPACE.len() as f64).log2()
             } else {
+                mask.push('b');
                 256f64.log2()
             }
         })
-        .sum()
+        .sum();
+    (mask_entropy, mask)
 }
 
 #[cfg(test)]
@@ -200,6 +213,7 @@ mod tests {
             est.estimate_password_entropy(pwd.as_bytes()).unwrap(),
             PasswordEntropyResult {
                 mask_entropy: 185.91054439821917,
+                charset_mask: "?d".to_string(),
                 subword_entropy: 92.46918260193678,
                 min_subword_mask: "?".to_string(),
                 subword_entropy_min_split: min_split,
@@ -231,6 +245,7 @@ mod tests {
             est.estimate_password_entropy(pwd.as_bytes()).unwrap(),
             PasswordEntropyResult {
                 mask_entropy: 187.25484030613498,
+                charset_mask: "?d".to_string(),
                 subword_entropy: 206.14950164576396,
                 min_subword_mask: "?".to_string(),
                 subword_entropy_min_split: min_split,
@@ -240,18 +255,18 @@ mod tests {
 
     #[test]
     fn test_password_mask_cost() {
-        let cases: Vec<(&str, f64)> = vec![
-            ("Aa123456!", 34.33244800560635),
-            ("0123456789", 33.219280948873624),
-            ("😃", 32.0),
-            ("!@#$%^&*()", 50.0),
+        let cases: Vec<(&str, (f64, String))> = vec![
+            ("Aa123456!", (34.33244800560635, "?u?d?d".to_string())),
+            ("0123456789", (33.219280948873624, "?u?d?d".to_string())),
+            ("😃", (32.0, "?u?d?d".to_string())),
+            ("!@#$%^&*()", (50.0, "?u?d?d".to_string())),
             (
                 "E93gtaaE6yF7xDOWv3ww2QE6qD-Wye4mk8O3Vaerem8",
-                187.25484030613498,
+                (187.25484030613498, "?u?d?d".to_string()),
             ),
         ];
-        for (pwd, expected_cost) in cases {
-            assert_eq!(password_mask_entropy(pwd.as_bytes()), expected_cost);
+        for (pwd, expected) in cases {
+            assert_eq!(password_mask_entropy(pwd.as_bytes()), expected);
         }
     }
 }

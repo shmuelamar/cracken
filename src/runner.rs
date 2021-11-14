@@ -177,8 +177,7 @@ The entropy of a password is the log2(len(keyspace)) of the password.
 
 There are two type of keyspace size estimations:
   * mask - keyspace of each char (digit=10, lowercase=26...).
-  * subword - finding minimal split into subwords given a sorted by frequency smartlist and multiply the word ranks (line number in the smarlist).
-  * min - minimum between the two above.
+  * hybrid - finding minimal split into subwords and charsets.
 
 "#)
         .arg(
@@ -215,10 +214,10 @@ There are two type of keyspace size estimations:
         Arg::with_name("entropy_type")
             .short("t")
             .long("entropy-type")
-            .help("type of entropy to output, one of: mask, subword, min (minimum between the two, the default)")
+            .help("type of entropy to output, one of: mask(charsets only), hybrid(charsets+wordlists)")
             .takes_value(true)
             .required(false)
-            .possible_values(&["subword", "mask"])
+            .possible_values(&["hybrid", "mask"])
             .conflicts_with("password"),
         )
     ).subcommand(SubCommand::with_name("create")
@@ -392,19 +391,21 @@ pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
     let smartlist_files: Vec<&str> = args.values_of("smartlist").map(|x| x.collect()).unwrap();
     let est = EntropyEstimator::from_files(smartlist_files.as_ref())?;
     let is_summary_only = args.is_present("summary");
-    let entropy_type = args.value_of("entropy_type").unwrap_or("subword");
+    let entropy_type = args.value_of("entropy_type").unwrap_or("hybrid");
     let mut total_entropy = 0f64;
     let mut pwd_count = 0usize;
 
     if let Some(pwd) = args.value_of("password") {
         let entropy_result = est.estimate_password_entropy(pwd.as_bytes())?;
-        println!("subword-entropy: {}", entropy_result.subword_entropy);
         println!(
-            "subword-entropy-minimal-split: {:?}",
+            "hybrid-min-split: {:?}",
             entropy_result.subword_entropy_min_split
         );
-        println!("min-subword-mask: {}", entropy_result.min_subword_mask);
-        println!("mask-entropy: {}", entropy_result.mask_entropy);
+        println!("hybrid-mask: {}", entropy_result.min_subword_mask);
+        println!("hybrid-min-entropy: {:.2}", entropy_result.subword_entropy);
+        println!("--");
+        println!("charset-mask: {}", entropy_result.charset_mask);
+        println!("charset-mask-entropy: {:.2}", entropy_result.mask_entropy);
     } else if let Some(pwd_file) = args.value_of("passwords-file") {
         // TODO: either remove or implement as rayon
         // let file = File::open(pwd_file)?;
@@ -424,14 +425,20 @@ pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
         let file = File::open(pwd_file)?;
         let reader = RawFileReader::new(file);
         for pwd in reader.into_iter() {
-            let entropy_result = est.estimate_password_entropy(&pwd?)?;
+            let pwd = pwd?;
+            let entropy_result = est.estimate_password_entropy(&pwd)?;
             let pwd_entropy = match entropy_type {
-                "subword" => entropy_result.subword_entropy,
+                "hybrid" => entropy_result.subword_entropy,
                 "mask" => entropy_result.mask_entropy,
                 _ => unreachable!("oopsie"),
             };
             if !is_summary_only {
-                println!("{:.2},{}", pwd_entropy, entropy_result.min_subword_mask);
+                println!(
+                    "{:.2},{},{}",
+                    pwd_entropy,
+                    entropy_result.min_subword_mask,
+                    String::from_utf8_lossy(&pwd)
+                );
             } else {
                 total_entropy += pwd_entropy;
             }
