@@ -175,7 +175,7 @@ available masks are:
 Computes the estimated entropy of password or password file.
 The entropy of a password is the log2(len(keyspace)) of the password.
 
-There are two type of keyspace size estimations:
+There are two types of keyspace size estimations:
   * mask - keyspace of each char (digit=10, lowercase=26...).
   * hybrid - finding minimal split into subwords and charsets.
 
@@ -241,13 +241,6 @@ There are two type of keyspace size estimations:
             .required(true)
         )
         .arg(
-            Arg::with_name("full_smartlist")
-            .long("full-smartlist")
-            .help("output full smartlist filename. will write full (unfiltered) smartlist to this file")
-            .takes_value(true)
-            .required(false)
-        )
-        .arg(
         Arg::with_name("tokenizer")
             .short("t")
             .long("tokenizer")
@@ -288,14 +281,6 @@ There are two type of keyspace size estimations:
             Arg::with_name("numbers_max_size")
             .long("numbers-max-size")
             .help("filters numbers (all digits) longer than the specified size")
-            .takes_value(true)
-            .required(false)
-            .default_value("")
-        )
-        .arg(
-            Arg::with_name("overlapping_word_max_size")
-            .long("overlapping-word-max-size")
-            .help("filters words having other overlapping word(s) larger than the specified size")
             .takes_value(true)
             .required(false)
             .default_value("")
@@ -407,21 +392,6 @@ pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
         println!("charset-mask: {}", entropy_result.charset_mask);
         println!("charset-mask-entropy: {:.2}", entropy_result.mask_entropy);
     } else if let Some(pwd_file) = args.value_of("passwords-file") {
-        // TODO: either remove or implement as rayon
-        // let file = File::open(pwd_file)?;
-        // let reader = RawFileReader::new(file);
-        // let pwds = reader.into_iter().map(|x|x.unwrap()).collect::<Vec<_>>();
-        // let (total_pwds, total_cracked, total_entropy) = pwds.into_par_iter().map(|pwd| {
-        //     let ent = est.compute_password_subword_entropy(&pwd).expect("bad result").0;
-        //     (1usize, if ent < 50.0 {1usize} else {0usize}, ent)
-        // }).reduce(|| (0usize,0usize, 0f64), |(mut cnt, mut total_cracked, mut total_entropy), (cnt2, cracked2, entropy2)| {
-        //     cnt += cnt2;
-        //     total_entropy+=entropy2;
-        //     total_cracked+=cracked2;
-        //     (cnt, total_cracked, total_entropy)
-        // });
-        // println!("avg entropy: {:?} {}", total_entropy/(total_pwds as f64), total_cracked);
-
         let file = File::open(pwd_file)?;
         let reader = RawFileReader::new(file);
         for pwd in reader.into_iter() {
@@ -454,7 +424,6 @@ pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
 
 pub fn run_create_smartlist(args: &ArgMatches) -> BoxResult<()> {
     let outfile = args.value_of("smartlist").unwrap();
-    let full_outfile = args.value_of("full_smartlist");
     let infiles = args.values_of("file").map(|x| x.collect()).unwrap();
     // TODO: from config or optional or if let
     // TODO: value_t! does not raise in case of invalid value
@@ -462,7 +431,6 @@ pub fn run_create_smartlist(args: &ArgMatches) -> BoxResult<()> {
     let min_frequency = value_t!(args.value_of("min_frequency"), u32).unwrap_or(10_000);
     let print_progress = !args.is_present("quiet");
     let numbers_max_size = value_t!(args.value_of("numbers_max_size"), u32).ok();
-    let overlapping_word_max_size = value_t!(args.value_of("overlapping_word_max_size"), u32).ok();
     let min_word_len = value_t!(args.value_of("min_word_len"), u32).unwrap_or(1);
 
     let tokenizers = args
@@ -478,34 +446,20 @@ pub fn run_create_smartlist(args: &ArgMatches) -> BoxResult<()> {
         });
 
     let mut writer = BufWriter::new(File::create(outfile)?);
-    let full_writer = match full_outfile {
-        Some(full_outfile_path) => Some(BufWriter::new(File::create(full_outfile_path)?)),
-        None => None,
-    };
-    let (vocab, full_vocab) = SmartlistBuilder::new()
+    let vocab = SmartlistBuilder::new()
         .infiles(infiles)
         .min_frequency(min_frequency)
         .vocab_max_size(vocab_max_size)
         .tokenizers(tokenizers.into_iter())
         .print_progress(print_progress)
         .numbers_max_size(numbers_max_size)
-        .overlapping_word_max_size(overlapping_word_max_size)
         .min_word_len(min_word_len)
-        .return_full_vocab(full_outfile.is_some())
         .build()?;
 
     // write to file
     for word in vocab.iter() {
         writer.write_all(word.as_bytes())?;
         writer.write_all(b"\n")?;
-    }
-
-    // write to file full vocab
-    if let (Some(full_vocab), Some(mut full_writer)) = (full_vocab, full_writer) {
-        for word in full_vocab.iter() {
-            full_writer.write_all(word.as_bytes())?;
-            full_writer.write_all(b"\n")?;
-        }
     }
     Ok(())
 }

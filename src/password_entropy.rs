@@ -29,6 +29,7 @@ impl EntropyEstimator {
     pub fn from_files<P: AsRef<Path>>(filenames: &[P]) -> BoxResult<Self> {
         let mut words = Vec::with_capacity(filenames.len() + SYMBOL2CHARSET.len());
 
+        // add common charsets as wordlists
         for charset in SYMBOL2CHARSET {
             let set = charset
                 .chars
