@@ -378,18 +378,31 @@ pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
     let entropy_type = args.value_of("entropy_type").unwrap_or("hybrid");
     let mut total_entropy = 0f64;
     let mut pwd_count = 0usize;
+    let mut stdout = stdout();
 
     if let Some(pwd) = args.value_of("password") {
         let entropy_result = est.estimate_password_entropy(pwd.as_bytes())?;
-        println!(
-            "hybrid-min-split: {:?}",
-            entropy_result.subword_entropy_min_split
+        let text = format!(
+            "hybrid-min-split: {:?}
+hybrid-mask: {}
+hybrid-min-entropy: {:.2}
+--
+charset-mask: {}
+charset-mask-entropy: {:.2}
+            ",
+            entropy_result.subword_entropy_min_split,
+            entropy_result.min_subword_mask,
+            entropy_result.subword_entropy,
+            entropy_result.charset_mask,
+            entropy_result.mask_entropy,
         );
-        println!("hybrid-mask: {}", entropy_result.min_subword_mask);
-        println!("hybrid-min-entropy: {:.2}", entropy_result.subword_entropy);
-        println!("--");
-        println!("charset-mask: {}", entropy_result.charset_mask);
-        println!("charset-mask-entropy: {:.2}", entropy_result.mask_entropy);
+        if let Err(e) = write!(&mut stdout, "{}", text) {
+            match e.kind() {
+                // ignore broken pipe, (e.g. happens when using head)
+                ErrorKind::BrokenPipe => return Ok(()),
+                _ => bail!("error occurred writing to out: {}", e),
+            }
+        }
     } else if let Some(pwd_file) = args.value_of("passwords-file") {
         let file = File::open(pwd_file)?;
         let reader = RawFileReader::new(file);
@@ -399,15 +412,22 @@ pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
             let pwd_entropy = match entropy_type {
                 "hybrid" => entropy_result.subword_entropy,
                 "mask" => entropy_result.mask_entropy,
-                _ => unreachable!("oopsie"),
+                _ => unreachable!("invalid entropy type"),
             };
             if !is_summary_only {
-                println!(
+                if let Err(e) = writeln!(
+                    &mut stdout,
                     "{:.2},{},{}",
                     pwd_entropy,
                     entropy_result.min_subword_mask,
                     String::from_utf8_lossy(&pwd)
-                );
+                ) {
+                    match e.kind() {
+                        // ignore broken pipe, (e.g. happens when using head)
+                        ErrorKind::BrokenPipe => return Ok(()),
+                        _ => bail!("error occurred writing to out: {}", e),
+                    }
+                }
             } else {
                 total_entropy += pwd_entropy;
             }
@@ -415,7 +435,11 @@ pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
         }
 
         if is_summary_only {
-            println!("avg entropy: {}", total_entropy / pwd_count as f64);
+            writeln!(
+                &mut stdout,
+                "avg entropy: {}",
+                total_entropy / pwd_count as f64
+            )?;
         }
     }
     Ok(())
