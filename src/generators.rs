@@ -201,7 +201,6 @@ impl<'a> WordlistGenerator<'a> {
     ) -> BoxResult<WordlistGenerator<'a>> {
         let mask_ops = parse_mask(mask)?;
 
-        // TODO: split to functions
         let mut wordlists_data = vec![];
         for fname in wordlists_fnames.iter() {
             wordlists_data.push(Rc::new(Wordlist::from_file(fname)?));
