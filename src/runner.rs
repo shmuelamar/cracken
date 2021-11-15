@@ -1,6 +1,6 @@
 use std::env;
 use std::fs::File;
-use std::io::{BufRead, BufReader, BufWriter, ErrorKind, Write};
+use std::io::{stdout, BufRead, BufReader, BufWriter, ErrorKind, Write};
 
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
@@ -328,12 +328,12 @@ pub fn run_wordlist_generator(args: &ArgMatches) -> BoxResult<()> {
     let outfile = args.value_of("output-file");
 
     // create output file
-    let out: Option<Box<dyn Write>> = match outfile {
+    let mut out: Box<dyn Write> = match outfile {
         Some(fname) => match File::create(fname) {
-            Ok(fp) => Some(Box::new(fp)),
+            Ok(fp) => Box::new(fp),
             Err(e) => bail!("cannot open file {}: {}", fname, e),
         },
-        None => None,
+        None => Box::new(stdout()),
     };
 
     // TODO: check len(custom-charset) < max(mask). index error on mask
@@ -357,8 +357,7 @@ pub fn run_wordlist_generator(args: &ArgMatches) -> BoxResult<()> {
             return Ok(());
         }
 
-        match word_generator.gen(None) {
-            // FIXME: out
+        match word_generator.gen(&mut out) {
             Ok(_) => {}
             Err(e) => {
                 match e.kind() {

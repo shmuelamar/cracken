@@ -1,4 +1,3 @@
-use std::io;
 use std::io::Write;
 use std::rc::Rc;
 
@@ -11,7 +10,7 @@ use crate::wordlists::{Wordlist, WordlistIterator};
 use crate::{BoxResult, MAX_WORD_SIZE};
 
 pub trait WordGenerator {
-    fn gen<'b>(&self, out: Option<Box<dyn Write + 'b>>) -> Result<(), std::io::Error>;
+    fn gen<'b>(&self, out: &mut Box<dyn Write + 'b>) -> Result<(), std::io::Error>;
     fn combinations(&self) -> BigUint;
 }
 
@@ -171,11 +170,9 @@ impl<'a> CharsetGenerator<'a> {
 
 impl<'a> WordGenerator for CharsetGenerator<'a> {
     /// generates all words into the output buffer `out`
-    fn gen<'b>(&self, out: Option<Box<dyn Write + 'b>>) -> Result<(), std::io::Error> {
-        let mut out = out.unwrap_or_else(|| Box::new(io::stdout()));
-
+    fn gen<'b>(&self, out: &mut Box<dyn Write + 'b>) -> Result<(), std::io::Error> {
         for pwdlen in self.minlen..=self.maxlen {
-            self.gen_by_length(pwdlen, &mut out)?;
+            self.gen_by_length(pwdlen, out)?;
         }
         Ok(())
     }
@@ -345,10 +342,8 @@ impl<'a> WordlistGenerator<'a> {
 
 impl<'a> WordGenerator for WordlistGenerator<'a> {
     /// generates all words into the output buffer `out`
-    fn gen<'b>(&self, out: Option<Box<dyn Write + 'b>>) -> Result<(), std::io::Error> {
-        let mut out = out.unwrap_or_else(|| Box::new(io::stdout()));
-
-        self.gen_words(&mut out)?;
+    fn gen<'b>(&self, out: &mut Box<dyn Write + 'b>) -> Result<(), std::io::Error> {
+        self.gen_words(out)?;
         Ok(())
     }
 
@@ -366,7 +361,7 @@ impl<'a> WordGenerator for WordlistGenerator<'a> {
 #[cfg(test)]
 mod tests {
     use std::fs;
-    use std::io::Cursor;
+    use std::io::{Cursor, Write};
 
     use num_bigint::{BigUint, ToBigUint};
 
@@ -479,8 +474,10 @@ mod tests {
 
     fn assert_gen<'a>(w: Box<dyn WordGenerator + 'a>, fname: &str) -> String {
         let mut buf: Vec<u8> = Vec::new();
-        let mut cur = Cursor::new(&mut buf);
-        w.gen(Some(Box::new(&mut cur))).unwrap();
+        {
+            let mut cur: Box<dyn Write> = Box::new(Cursor::new(&mut buf));
+            w.gen(&mut cur).unwrap();
+        }
 
         let result = String::from_utf8(buf).unwrap();
         let expected = fs::read_to_string(wordlist_fname(fname)).unwrap();
