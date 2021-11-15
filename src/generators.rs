@@ -281,7 +281,13 @@ impl<'a> WordlistGenerator<'a> {
                             continue 'outer_loop;
                         }
 
-                        pos -= 1;
+                        // on debug build we have overflow checks - but we dont care
+                        // from overflow in this case its the rightmost position
+                        if cfg!(debug_assertions) && pos == 0 {
+                            pos = 0;
+                        } else {
+                            pos -= 1;
+                        }
                     }
                     Position::WordlistPos { wordlist, idx } => {
                         let finished;
@@ -323,10 +329,17 @@ impl<'a> WordlistGenerator<'a> {
 
                         // copy the next word to the adjusted buffer
                         word[pos + 1 - wlen..=pos].copy_from_slice(wordlist_word);
-                        pos -= wlen;
 
                         if !finished {
                             continue 'outer_loop;
+                        }
+
+                        // on debug build we have overflow checks - but we dont care
+                        // from overflow in this case its the rightmost position
+                        if cfg!(debug_assertions) && pos < wlen {
+                            pos = 0;
+                        } else {
+                            pos -= wlen;
                         }
                     }
                 }

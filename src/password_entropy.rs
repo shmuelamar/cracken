@@ -170,8 +170,8 @@ mod tests {
         assert_eq!(
             res,
             (
-                30.823060867312257,
-                vec!["helloworld", "123", "!"]
+                31.617060696025717,
+                vec!["helloworld", "1", "2", "3", "!"]
                     .into_iter()
                     .map(String::from)
                     .collect(),
@@ -187,13 +187,19 @@ mod tests {
         let est = EntropyEstimator::from_files(vec![fname].as_ref()).unwrap();
         let min_split = vec![
             "helloworld",
-            "123",
+            "1",
+            "2",
+            "3",
             "!",
             "helloworld",
-            "123",
+            "1",
+            "2",
+            "3",
             "!",
             "helloworld",
-            "123",
+            "1",
+            "2",
+            "3",
             "!",
         ]
         .into_iter()
@@ -205,7 +211,7 @@ mod tests {
         assert_eq!(
             res,
             (
-                92.46918260193678,
+                94.85118208807718,
                 min_split.to_vec(),
                 "?w1?d?d?d?s?w1?d?d?d?s?w1?d?d?d?s".to_string()
             ),
@@ -214,9 +220,9 @@ mod tests {
             est.estimate_password_entropy(pwd.as_bytes()).unwrap(),
             PasswordEntropyResult {
                 mask_entropy: 185.91054439821917,
-                charset_mask: "?d".to_string(),
-                subword_entropy: 92.46918260193678,
-                min_subword_mask: "?".to_string(),
+                charset_mask: "?l?l?l?l?l?l?l?l?l?l?d?d?d?s?l?l?l?l?l?l?l?l?l?l?d?d?d?s?l?l?l?l?l?l?l?l?l?l?d?d?d?s".to_string(),
+                subword_entropy: 94.85118208807718,
+                min_subword_mask: "?w1?d?d?d?s?w1?d?d?d?s?w1?d?d?d?s".to_string(),
                 subword_entropy_min_split: min_split,
             }
         );
@@ -227,28 +233,29 @@ mod tests {
         let pwd = "E93gtaaE6yF7xDOWv3ww2QE6qD-Wye4mk8O3Vaerem8";
         let fname = wordlist_fname("vocab.txt");
         let min_split = vec![
-            "E", "9", "3", "g", "t", "a", "a", "E", "6", "y", "F", "7", "x", "DOW", "v", "3", "w",
-            "w", "2", "QE", "6", "q", "D-", "W", "y", "e", "4", "m", "k", "8", "O", "3", "V", "a",
-            "e", "r", "e", "m", "8",
+            "E", "9", "3", "g", "t", "a", "a", "E", "6", "y", "F", "7", "x", "D", "O", "W", "v",
+            "3", "w", "w", "2", "Q", "E", "6", "q", "D", "-", "W", "y", "e", "4", "m", "k", "8",
+            "O", "3", "V", "a", "e", "r", "e", "m", "8",
         ]
         .into_iter()
         .map(String::from)
         .collect::<Vec<String>>();
+        let min_mask = "?u?d?d?l?l?l?l?u?d?l?u?d?l?u?u?u?l?d?l?l?d?u?u?d?l?u?s?u?l?l?d?l?l?d?u?d?u?l?l?l?l?l?d";
         let est = EntropyEstimator::from_files(vec![fname].as_ref()).unwrap();
         let res = est
             .compute_password_subword_entropy(pwd.as_bytes())
             .unwrap();
         assert_eq!(
             res,
-            (206.14950164576396, min_split.to_vec(), "?u".to_string()),
+            (187.29923442549344, min_split.to_vec(), min_mask.to_string()),
         );
         assert_eq!(
             est.estimate_password_entropy(pwd.as_bytes()).unwrap(),
             PasswordEntropyResult {
                 mask_entropy: 187.25484030613498,
-                charset_mask: "?d".to_string(),
-                subword_entropy: 206.14950164576396,
-                min_subword_mask: "?".to_string(),
+                charset_mask: min_mask.to_string(),
+                subword_entropy: 187.29923442549344,
+                min_subword_mask: min_mask.to_string(),
                 subword_entropy_min_split: min_split,
             }
         );
@@ -256,18 +263,21 @@ mod tests {
 
     #[test]
     fn test_password_mask_cost() {
-        let cases: Vec<(&str, (f64, String))> = vec![
-            ("Aa123456!", (34.33244800560635, "?u?d?d".to_string())),
-            ("0123456789", (33.219280948873624, "?u?d?d".to_string())),
-            ("😃", (32.0, "?u?d?d".to_string())),
-            ("!@#$%^&*()", (50.0, "?u?d?d".to_string())),
+        let cases: Vec<(&str, (f64, &str))> = vec![
+            ("Aa123456!", (34.33244800560635, "?u?l?d?d?d?d?d?d?s")),
+            ("0123456789", (33.219280948873624, "?d?d?d?d?d?d?d?d?d?d")),
+            ("😃", (32.0, "?b?b?b?b")),
+            ("!@#$%^&*()", (50.0, "?s?s?s?s?s?s?s?s?s?s")),
             (
                 "E93gtaaE6yF7xDOWv3ww2QE6qD-Wye4mk8O3Vaerem8",
-                (187.25484030613498, "?u?d?d".to_string()),
+                (187.25484030613498, "?u?d?d?l?l?l?l?u?d?l?u?d?l?u?u?u?l?d?l?l?d?u?u?d?l?u?s?u?l?l?d?l?l?d?u?d?u?l?l?l?l?l?d"),
             ),
         ];
-        for (pwd, expected) in cases {
-            assert_eq!(password_mask_entropy(pwd.as_bytes()), expected);
+        for (pwd, (expected_cost, expected_mask)) in cases {
+            assert_eq!(
+                password_mask_entropy(pwd.as_bytes()),
+                (expected_cost, expected_mask.to_string())
+            );
         }
     }
 }
