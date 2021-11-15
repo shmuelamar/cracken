@@ -19,7 +19,8 @@ use tokenizers::{
 
 use crate::BoxResult;
 
-pub const DEFAULT_VOCAB_SIZE: u32 = 50000;
+pub const DEFAULT_VOCAB_SIZE: u32 = 10000;
+pub const DEFAULT_VOCAB_SIZE_STR: &'static str = "10000";
 pub const DEFAULT_MIN_FREQUENCY: u32 = 0;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone)]

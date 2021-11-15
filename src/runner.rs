@@ -4,7 +4,7 @@ use std::io::{BufRead, BufReader, BufWriter, ErrorKind, Write};
 
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
-use crate::create_smartlist::{SmartlistBuilder, SmartlistTokenizer};
+use crate::create_smartlist::{SmartlistBuilder, SmartlistTokenizer, DEFAULT_VOCAB_SIZE_STR};
 use crate::generators::get_word_generator;
 use crate::helpers::RawFileReader;
 use crate::password_entropy::EntropyEstimator;
@@ -267,7 +267,7 @@ There are two types of keyspace size estimations:
             .help("max vocabulary size")
             .takes_value(false)
             .required(false)
-            .default_value("10000")
+            .default_value(DEFAULT_VOCAB_SIZE_STR)
         )
         .arg(
             Arg::with_name("min_frequency")
