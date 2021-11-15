@@ -2,7 +2,7 @@
 name = "cracken"
 version = "0.1.8"
 authors = ["shmuelamar"]
-edition = "2018"
+edition = "2021"
 build = "build.rs"
 description = "a fast password wordlist generator"
 homepage = "https://github.com/shmuelamar/cracken"
