@@ -4,7 +4,7 @@ use std::rc::Rc;
 use num_bigint::{BigUint, ToBigUint};
 
 use crate::charsets::Charset;
-use crate::mask::{parse_mask, MaskOp};
+use crate::mask::{parse_mask, validate_charsets, validate_wordlists, MaskOp};
 use crate::stackbuf::StackBuf;
 use crate::wordlists::{Wordlist, WordlistIterator};
 use crate::{BoxResult, MAX_WORD_SIZE};
@@ -15,8 +15,8 @@ pub trait WordGenerator {
 }
 
 /// Generator optimized for charsets only
-pub struct CharsetGenerator<'a> {
-    pub mask: &'a str,
+pub struct CharsetGenerator {
+    pub mask: Vec<MaskOp>,
     pub minlen: usize,
     pub maxlen: usize,
     charsets: Vec<Charset>,
@@ -24,8 +24,8 @@ pub struct CharsetGenerator<'a> {
 }
 
 /// Wordlist Generator for both charsets and wordlists
-pub struct WordlistGenerator<'a> {
-    pub mask: &'a str,
+pub struct WordlistGenerator {
+    pub mask: Vec<MaskOp>,
     items: Vec<WordlistItem>,
 }
 
@@ -54,10 +54,13 @@ pub fn get_word_generator<'a>(
     custom_charsets: &[&'a str],
     wordlists_fnames: &[&'a str],
 ) -> BoxResult<Box<dyn WordGenerator + 'a>> {
-    // TODO: check mask and not the presence of wordlist
-    if wordlists_fnames.is_empty() {
+    let mask_ops = parse_mask(mask)?;
+    validate_charsets(&mask_ops, custom_charsets.len())?;
+    validate_wordlists(&mask_ops, wordlists_fnames.len())?;
+
+    if mask_ops.iter().all(|op| !matches!(op, MaskOp::Wordlist(_))) {
         Ok(Box::new(CharsetGenerator::new(
-            mask,
+            mask_ops,
             minlen,
             maxlen,
             custom_charsets,
@@ -66,45 +69,26 @@ pub fn get_word_generator<'a>(
         bail!("cannot set minlen or maxlen with wordlists")
     } else {
         Ok(Box::new(WordlistGenerator::new(
-            mask,
+            mask_ops,
             wordlists_fnames,
             custom_charsets,
         )?))
     }
 }
 
-impl<'a> CharsetGenerator<'a> {
+impl<'a> CharsetGenerator {
     pub fn new(
-        mask: &'a str,
+        mask: Vec<MaskOp>,
         minlen: Option<usize>,
         maxlen: Option<usize>,
         custom_charsets: &[&'a str],
-    ) -> BoxResult<CharsetGenerator<'a>> {
-        let mask_ops = parse_mask(mask)?;
-
-        // TODO: we need to check similarly wordlist len at is_valid_mask()
-        let mut max_custom_charset = -1;
-        for op in &mask_ops {
-            if let MaskOp::CustomCharset(idx) = op {
-                max_custom_charset = max_custom_charset.max(idx.to_owned() as isize)
-            }
-        }
-
-        // validate custom charset
-        if max_custom_charset >= custom_charsets.len() as isize {
-            bail!(
-                "mask contains ?{} charset but only {} custom charsets defined",
-                max_custom_charset + 1,
-                custom_charsets.len()
-            );
-        }
-
-        let charsets: Vec<_> = mask_ops
-            .into_iter()
+    ) -> BoxResult<CharsetGenerator> {
+        let charsets: Vec<_> = mask
+            .iter()
             .map(|op| match op {
-                MaskOp::Char(ch) => Charset::from_chars(vec![ch as u8].as_ref()),
-                MaskOp::BuiltinCharset(ch) => Charset::from_symbol(ch),
-                MaskOp::CustomCharset(idx) => Charset::from_chars(custom_charsets[idx].as_bytes()),
+                MaskOp::Char(ch) => Charset::from_chars(vec![*ch as u8].as_ref()),
+                MaskOp::BuiltinCharset(ch) => Charset::from_symbol(*ch),
+                MaskOp::CustomCharset(idx) => Charset::from_chars(custom_charsets[*idx].as_bytes()),
                 MaskOp::Wordlist(_) => unreachable!("cant handle wordlists"),
             })
             .collect();
@@ -168,7 +152,7 @@ impl<'a> CharsetGenerator<'a> {
     }
 }
 
-impl<'a> WordGenerator for CharsetGenerator<'a> {
+impl<'a> WordGenerator for CharsetGenerator {
     /// generates all words into the output buffer `out`
     fn gen<'b>(&self, out: &mut Box<dyn Write + 'b>) -> Result<(), std::io::Error> {
         for pwdlen in self.minlen..=self.maxlen {
@@ -193,31 +177,28 @@ impl<'a> WordGenerator for CharsetGenerator<'a> {
     }
 }
 
-impl<'a> WordlistGenerator<'a> {
+impl<'a> WordlistGenerator {
     pub fn new(
-        mask: &'a str,
+        mask: Vec<MaskOp>,
         wordlists_fnames: &[&'a str],
         custom_charsets: &[&'a str],
-    ) -> BoxResult<WordlistGenerator<'a>> {
-        let mask_ops = parse_mask(mask)?;
-
+    ) -> BoxResult<WordlistGenerator> {
         let mut wordlists_data = vec![];
         for fname in wordlists_fnames.iter() {
             wordlists_data.push(Rc::new(Wordlist::from_file(fname)?));
         }
 
-        // TODO: return error from custom_charset not in index & invalid symbol
-        let items: Vec<WordlistItem> = mask_ops
-            .into_iter()
+        let items: Vec<WordlistItem> = mask
+            .iter()
             .map(|op| match op {
                 MaskOp::Char(ch) => {
-                    WordlistItem::Charset(Charset::from_chars(vec![ch as u8].as_ref()))
+                    WordlistItem::Charset(Charset::from_chars(vec![*ch as u8].as_ref()))
                 }
-                MaskOp::BuiltinCharset(ch) => WordlistItem::Charset(Charset::from_symbol(ch)),
+                MaskOp::BuiltinCharset(ch) => WordlistItem::Charset(Charset::from_symbol(*ch)),
                 MaskOp::CustomCharset(idx) => {
-                    WordlistItem::Charset(Charset::from_chars(custom_charsets[idx].as_bytes()))
+                    WordlistItem::Charset(Charset::from_chars(custom_charsets[*idx].as_bytes()))
                 }
-                MaskOp::Wordlist(idx) => WordlistItem::Wordlist(Rc::clone(&wordlists_data[idx])),
+                MaskOp::Wordlist(idx) => WordlistItem::Wordlist(Rc::clone(&wordlists_data[*idx])),
             })
             .collect();
 
@@ -352,7 +333,7 @@ impl<'a> WordlistGenerator<'a> {
     }
 }
 
-impl<'a> WordGenerator for WordlistGenerator<'a> {
+impl<'a> WordGenerator for WordlistGenerator {
     /// generates all words into the output buffer `out`
     fn gen<'b>(&self, out: &mut Box<dyn Write + 'b>) -> Result<(), std::io::Error> {
         self.gen_words(out)?;
@@ -378,14 +359,15 @@ mod tests {
     use num_bigint::{BigUint, ToBigUint};
 
     use crate::generators::get_word_generator;
+    use crate::mask::parse_mask;
     use crate::test_util::wordlist_fname;
 
     use super::{CharsetGenerator, WordGenerator};
 
     #[test]
     fn test_gen_words_single_digit() {
-        let mask = "?d";
-        let word_gen = CharsetGenerator::new(mask, None, None, &vec![]).unwrap();
+        let mask = parse_mask("?d").unwrap();
+        let word_gen = CharsetGenerator::new(mask.to_vec(), None, None, &vec![]).unwrap();
 
         assert_eq!(word_gen.mask, mask);
         assert_eq!(word_gen.minlen, 1);
@@ -401,8 +383,8 @@ mod tests {
 
     #[test]
     fn test_gen_upper_lower_1_4() {
-        let mask = "?u?l?u?l";
-        let word_gen = CharsetGenerator::new(mask, Some(1), None, &vec![]).unwrap();
+        let mask = parse_mask("?u?l?u?l").unwrap();
+        let word_gen = CharsetGenerator::new(mask.to_vec(), Some(1), None, &vec![]).unwrap();
 
         assert_eq!(word_gen.mask, mask);
         assert_eq!(word_gen.minlen, 1);
@@ -415,8 +397,8 @@ mod tests {
 
     #[test]
     fn test_gen_pwd_upper_lower_year_1_4() {
-        let mask = "pwd?u?l201?1";
-        let word_gen = CharsetGenerator::new(mask, Some(1), None, &vec!["56789"]).unwrap();
+        let mask = parse_mask("pwd?u?l201?1").unwrap();
+        let word_gen = CharsetGenerator::new(mask.to_vec(), Some(1), None, &vec!["56789"]).unwrap();
 
         assert_eq!(word_gen.mask, mask);
         assert_eq!(word_gen.minlen, 1);
@@ -425,16 +407,6 @@ mod tests {
         assert_eq!(word_gen.min_word, "pwdAa2015".as_bytes());
 
         assert_gen(Box::new(word_gen), "upper-lower-year-1-4.txt");
-    }
-
-    #[test]
-    fn test_invalid_custom_charset() {
-        let result = CharsetGenerator::new("?1", None, None, &vec![]);
-
-        assert_eq!(
-            result.err().unwrap().to_string(),
-            "mask contains ?1 charset but only 0 custom charsets defined",
-        );
     }
 
     #[test]
@@ -484,6 +456,26 @@ mod tests {
         assert_gen(word_gen, "wordlists-mix.txt");
     }
 
+    #[test]
+    fn test_word_generator_invalid_wordlist_mask() {
+        let mask = "?w1?d?w2?l?w1?1";
+        let wordlist1 = wordlist_fname("wordlist1.txt");
+        let charsets = vec!["!@#"];
+        let wordlists = vec![wordlist1.to_str().unwrap()];
+
+        let word_gen = get_word_generator(mask, None, None, charsets.as_ref(), wordlists.as_ref());
+        assert!(word_gen.is_err());
+    }
+
+    #[test]
+    fn test_word_generator_invalid_custom_charset_mask() {
+        let mask = "a?1?2?l?3";
+        let charsets = vec!["!@#", "abc"];
+
+        let word_gen = get_word_generator(mask, None, None, charsets.as_ref(), vec![].as_ref());
+        assert!(word_gen.is_err());
+    }
+
     fn assert_gen<'a>(w: Box<dyn WordGenerator + 'a>, fname: &str) -> String {
         let mut buf: Vec<u8> = Vec::new();
         {
@@ -522,7 +514,8 @@ mod tests {
             ),
         ];
 
-        for (mask, result, minlen, maxlen) in combinations {
+        for (mask_str, result, minlen, maxlen) in combinations {
+            let mask = parse_mask(mask_str).unwrap();
             let word_gen = CharsetGenerator::new(mask, minlen, maxlen, &custom_charsets).unwrap();
             assert_eq!(
                 word_gen.combinations(),

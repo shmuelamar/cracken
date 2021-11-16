@@ -21,7 +21,6 @@ use tokenizers::{
 use crate::BoxResult;
 
 pub const DEFAULT_VOCAB_SIZE: u32 = 10000;
-pub const DEFAULT_VOCAB_SIZE_STR: &str = "10000";
 pub const DEFAULT_MIN_FREQUENCY: u32 = 0;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone)]
@@ -146,6 +145,7 @@ impl<P: AsRef<Path> + Sync> SmartlistBuilder<P> {
         let mut tokenizer = self.build_tokenizer(model)?;
 
         let mut trainer = UnigramTrainer::builder()
+            .vocab_size(self.vocab_max_size)
             .show_progress(self.print_progress)
             .build()?;
         self.train_tokenizer(&mut tokenizer, &mut trainer)

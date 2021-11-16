@@ -1,4 +1,3 @@
-#[macro_use(value_t)]
 extern crate clap;
 #[macro_use(lazy_static)]
 extern crate lazy_static;

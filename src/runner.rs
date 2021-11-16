@@ -4,7 +4,7 @@ use std::io::{stdout, BufRead, BufReader, BufWriter, ErrorKind, Write};
 
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
-use crate::create_smartlist::{SmartlistBuilder, SmartlistTokenizer, DEFAULT_VOCAB_SIZE_STR};
+use crate::create_smartlist::{SmartlistBuilder, SmartlistTokenizer, DEFAULT_VOCAB_SIZE};
 use crate::generators::get_word_generator;
 use crate::helpers::RawFileReader;
 use crate::password_entropy::EntropyEstimator;
@@ -250,7 +250,7 @@ There are two types of keyspace size estimations:
             .required(false)
             .multiple(true)
             .number_of_values(1)
-            .default_value("unigram")
+            .default_value("bpe")
         )
         .arg(
             Arg::with_name("quiet")
@@ -265,17 +265,15 @@ There are two types of keyspace size estimations:
             .short("m")
             .long("vocab-max-size")
             .help("max vocabulary size")
-            .takes_value(false)
+            .takes_value(true)
             .required(false)
-            .default_value(DEFAULT_VOCAB_SIZE_STR)
         )
         .arg(
             Arg::with_name("min_frequency")
             .long("min-frequency")
             .help("minimum frequency of a word, relevant only for BPE tokenizer")
-            .takes_value(false)
+            .takes_value(true)
             .required(false)
-            .default_value("0")
         )
         .arg(
             Arg::with_name("numbers_max_size")
@@ -283,7 +281,6 @@ There are two types of keyspace size estimations:
             .help("filters numbers (all digits) longer than the specified size")
             .takes_value(true)
             .required(false)
-            .default_value("")
         )
         .arg(
             Arg::with_name("min_word_len")
@@ -292,10 +289,30 @@ There are two types of keyspace size estimations:
             .help("filters words shorter than the specified length")
             .takes_value(true)
             .required(false)
-            .default_value("1")
         )
     )
     .get_matches_from(args)
+}
+
+/// helper for handling cast and optional values at same time, exiting on error
+macro_rules! optional_value_t_or_exit {
+    ($m:ident, $v:expr, $t:ty) => {
+        optional_value_t_or_exit!($m.value_of($v), $t)
+    };
+    ($m:ident.value_of($v:expr), $t:ty) => {
+        if let Some(v) = $m.value_of($v) {
+            match v.parse::<$t>() {
+                Ok(val) => Some(val),
+                Err(_) => clap::Error::value_validation_auto(format!(
+                    "The argument '{}' isn't a valid value",
+                    v
+                ))
+                .exit(),
+            }
+        } else {
+            None
+        }
+    };
 }
 
 pub fn run(args: Option<Vec<&str>>) -> BoxResult<()> {
@@ -304,8 +321,8 @@ pub fn run(args: Option<Vec<&str>>) -> BoxResult<()> {
 
     match arg_matches.subcommand() {
         ("generate", Some(matches)) => run_wordlist_generator(matches),
-        ("entropy", Some(matches)) => run_entropy_estimator(matches),
         ("create", Some(matches)) => run_create_smartlist(matches),
+        ("entropy", Some(matches)) => run_entropy_estimator(matches),
         (_, None) => bail!("invalid command"),
         _ => unreachable!("oopsie, subcommand is required"),
     }
@@ -322,9 +339,8 @@ pub fn run_wordlist_generator(args: &ArgMatches) -> BoxResult<()> {
         }
     };
 
-    // TODO: result should fail on bad input not default value
-    let minlen = value_t!(args.value_of("min-length"), usize).ok();
-    let maxlen = value_t!(args.value_of("max-length"), usize).ok();
+    let minlen = optional_value_t_or_exit!(args, "min-length", usize);
+    let maxlen = optional_value_t_or_exit!(args, "max-length", usize);
     let outfile = args.value_of("output-file");
 
     // create output file
@@ -336,7 +352,6 @@ pub fn run_wordlist_generator(args: &ArgMatches) -> BoxResult<()> {
         None => Box::new(stdout()),
     };
 
-    // TODO: check len(custom-charset) < max(mask). index error on mask
     let custom_charsets: Vec<&str> = args
         .values_of("custom-charset")
         .map(|x| x.collect())
@@ -448,13 +463,12 @@ charset-mask-entropy: {:.2}
 pub fn run_create_smartlist(args: &ArgMatches) -> BoxResult<()> {
     let outfile = args.value_of("smartlist").unwrap();
     let infiles = args.values_of("file").map(|x| x.collect()).unwrap();
-    // TODO: from config or optional or if let
-    // TODO: value_t! does not raise in case of invalid value
-    let vocab_max_size = value_t!(args.value_of("vocab_max_size"), u32).unwrap_or(10_000);
-    let min_frequency = value_t!(args.value_of("min_frequency"), u32).unwrap_or(10_000);
+    let vocab_max_size =
+        optional_value_t_or_exit!(args, "vocab_max_size", u32).unwrap_or(DEFAULT_VOCAB_SIZE);
+    let min_frequency = optional_value_t_or_exit!(args, "min_frequency", u32).unwrap_or(0);
     let print_progress = !args.is_present("quiet");
-    let numbers_max_size = value_t!(args.value_of("numbers_max_size"), u32).ok();
-    let min_word_len = value_t!(args.value_of("min_word_len"), u32).unwrap_or(1);
+    let numbers_max_size = optional_value_t_or_exit!(args, "numbers_max_size", u32);
+    let min_word_len = optional_value_t_or_exit!(args, "min_word_len", u32).unwrap_or(1);
 
     let tokenizers = args
         .values_of("tokenizer")
