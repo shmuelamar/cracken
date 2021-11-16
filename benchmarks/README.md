@@ -6,7 +6,7 @@ As of writing this, Cracken is probably the world's fastest wordlist generator:
 
 ![bechmarks results](./bench-results.svg)
 
-Cracken has 30% increased performance over hashcat's fast [maskprocessor][mp] (written in C).
+Cracken has 25% increased performance over hashcat's fast [maskprocessor][mp] (written in C).
 
 Cracken can generate around 2 GiB/s per core.
 
