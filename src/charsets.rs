@@ -71,10 +71,11 @@ pub const SYMBOL2CHARSET: [CharsetSymbol; 6] = [
     ),
 ];
 
+#[repr(align(64))]
 pub struct Charset {
     pub(crate) jmp_table: [u8; 256],
     pub(crate) min_char: u8,
-    pub(crate) chars: Vec<u8>,
+    pub(crate) len: usize,
 }
 
 impl Index<usize> for Charset {
@@ -99,7 +100,7 @@ impl Charset {
         Charset {
             jmp_table,
             min_char: chars[0],
-            chars,
+            len: chars.len(),
         }
     }
 

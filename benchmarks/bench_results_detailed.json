@@ -1,0 +1,3158 @@
+[
+    {
+        "bench": "9digits",
+        "iter": 0,
+        "ok": true,
+        "took": 4.703487396240234,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 1,
+        "ok": true,
+        "took": 4.71237325668335,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 2,
+        "ok": true,
+        "took": 4.724414825439453,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 3,
+        "ok": true,
+        "took": 4.825749158859253,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 4,
+        "ok": true,
+        "took": 4.790488958358765,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 5,
+        "ok": true,
+        "took": 4.8654632568359375,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 6,
+        "ok": true,
+        "took": 4.875399589538574,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 7,
+        "ok": true,
+        "took": 4.797388553619385,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 8,
+        "ok": true,
+        "took": 4.884119510650635,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 9,
+        "ok": true,
+        "took": 4.708131551742554,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 10,
+        "ok": true,
+        "took": 4.7279462814331055,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 11,
+        "ok": true,
+        "took": 4.8870930671691895,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 12,
+        "ok": true,
+        "took": 4.898985862731934,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 13,
+        "ok": true,
+        "took": 5.053455591201782,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 14,
+        "ok": true,
+        "took": 4.891585111618042,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 15,
+        "ok": true,
+        "took": 4.893701553344727,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 16,
+        "ok": true,
+        "took": 4.915660619735718,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 17,
+        "ok": true,
+        "took": 4.9446775913238525,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 18,
+        "ok": true,
+        "took": 4.910557746887207,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 19,
+        "ok": true,
+        "took": 4.899103879928589,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 20,
+        "ok": true,
+        "took": 4.887940406799316,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 21,
+        "ok": true,
+        "took": 4.88887357711792,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 22,
+        "ok": true,
+        "took": 4.829195261001587,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 23,
+        "ok": true,
+        "took": 4.779009103775024,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 24,
+        "ok": true,
+        "took": 4.960613012313843,
+        "tool": "cracken"
+    },
+    {
+        "bench": "9digits",
+        "iter": 0,
+        "ok": true,
+        "took": 6.28302264213562,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 1,
+        "ok": true,
+        "took": 6.327221632003784,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 2,
+        "ok": true,
+        "took": 6.187640428543091,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 3,
+        "ok": true,
+        "took": 6.224114179611206,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 4,
+        "ok": true,
+        "took": 6.219930648803711,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 5,
+        "ok": true,
+        "took": 6.182262420654297,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 6,
+        "ok": true,
+        "took": 6.1648266315460205,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 7,
+        "ok": true,
+        "took": 6.173027515411377,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 8,
+        "ok": true,
+        "took": 6.200786352157593,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 9,
+        "ok": true,
+        "took": 6.387784719467163,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 10,
+        "ok": true,
+        "took": 6.2438554763793945,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 11,
+        "ok": true,
+        "took": 6.256383180618286,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 12,
+        "ok": true,
+        "took": 6.18820595741272,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 13,
+        "ok": true,
+        "took": 6.369409799575806,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 14,
+        "ok": true,
+        "took": 6.219691514968872,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 15,
+        "ok": true,
+        "took": 6.310683012008667,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 16,
+        "ok": true,
+        "took": 6.221407175064087,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 17,
+        "ok": true,
+        "took": 6.358945846557617,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 18,
+        "ok": true,
+        "took": 6.234107971191406,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 19,
+        "ok": true,
+        "took": 6.392498970031738,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "9digits",
+        "iter": 0,
+        "ok": true,
+        "took": 178.34489703178406,
+        "tool": "crunch"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 0,
+        "ok": true,
+        "took": 14.625821352005005,
+        "tool": "cracken"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 1,
+        "ok": true,
+        "took": 14.977651357650757,
+        "tool": "cracken"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 2,
+        "ok": true,
+        "took": 15.31996488571167,
+        "tool": "cracken"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 3,
+        "ok": true,
+        "took": 14.963081359863281,
+        "tool": "cracken"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 4,
+        "ok": true,
+        "took": 15.108445882797241,
+        "tool": "cracken"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 5,
+        "ok": true,
+        "took": 14.703956365585327,
+        "tool": "cracken"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 6,
+        "ok": true,
+        "took": 15.164818286895752,
+        "tool": "cracken"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 7,
+        "ok": true,
+        "took": 15.132292032241821,
+        "tool": "cracken"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 8,
+        "ok": true,
+        "took": 14.788664102554321,
+        "tool": "cracken"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 0,
+        "ok": true,
+        "took": 19.529330730438232,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 1,
+        "ok": true,
+        "took": 19.96068000793457,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 2,
+        "ok": true,
+        "took": 19.99380898475647,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 3,
+        "ok": true,
+        "took": 19.561534881591797,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 4,
+        "ok": true,
+        "took": 20.000896453857422,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 5,
+        "ok": true,
+        "took": 19.811347723007202,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 6,
+        "ok": true,
+        "took": 19.486918449401855,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "upper-5lower-digit",
+        "iter": 0,
+        "ok": true,
+        "took": 465.2335777282715,
+        "tool": "crunch"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 0,
+        "ok": true,
+        "took": 0.5500876903533936,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 1,
+        "ok": true,
+        "took": 0.5407533645629883,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 2,
+        "ok": true,
+        "took": 0.5481109619140625,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 3,
+        "ok": true,
+        "took": 0.5582833290100098,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 4,
+        "ok": true,
+        "took": 0.5610184669494629,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 5,
+        "ok": true,
+        "took": 0.5604729652404785,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 6,
+        "ok": true,
+        "took": 0.5511844158172607,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 7,
+        "ok": true,
+        "took": 0.5557329654693604,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 8,
+        "ok": true,
+        "took": 0.5577943325042725,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 9,
+        "ok": true,
+        "took": 0.5619139671325684,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 10,
+        "ok": true,
+        "took": 0.5638248920440674,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 11,
+        "ok": true,
+        "took": 0.5607373714447021,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 12,
+        "ok": true,
+        "took": 0.5616357326507568,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 13,
+        "ok": true,
+        "took": 0.5440676212310791,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 14,
+        "ok": true,
+        "took": 0.5347394943237305,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 15,
+        "ok": true,
+        "took": 0.5408730506896973,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 16,
+        "ok": true,
+        "took": 0.5417227745056152,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 17,
+        "ok": true,
+        "took": 0.5503284931182861,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 18,
+        "ok": true,
+        "took": 0.5359864234924316,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 19,
+        "ok": true,
+        "took": 0.550255298614502,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 20,
+        "ok": true,
+        "took": 0.5559391975402832,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 21,
+        "ok": true,
+        "took": 0.5545775890350342,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 22,
+        "ok": true,
+        "took": 0.5528519153594971,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 23,
+        "ok": true,
+        "took": 0.5577118396759033,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 24,
+        "ok": true,
+        "took": 0.5564579963684082,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 25,
+        "ok": true,
+        "took": 0.5568861961364746,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 26,
+        "ok": true,
+        "took": 0.5441231727600098,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 27,
+        "ok": true,
+        "took": 0.5437607765197754,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 28,
+        "ok": true,
+        "took": 0.5458643436431885,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 29,
+        "ok": true,
+        "took": 0.545280933380127,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 30,
+        "ok": true,
+        "took": 0.5383908748626709,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 31,
+        "ok": true,
+        "took": 0.560096025466919,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 32,
+        "ok": true,
+        "took": 0.5427467823028564,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 33,
+        "ok": true,
+        "took": 0.548051118850708,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 34,
+        "ok": true,
+        "took": 0.5461037158966064,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 35,
+        "ok": true,
+        "took": 0.5494816303253174,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 36,
+        "ok": true,
+        "took": 0.5475113391876221,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 37,
+        "ok": true,
+        "took": 0.5520539283752441,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 38,
+        "ok": true,
+        "took": 0.5393576622009277,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 39,
+        "ok": true,
+        "took": 0.5459613800048828,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 40,
+        "ok": true,
+        "took": 0.5458347797393799,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 41,
+        "ok": true,
+        "took": 0.5464551448822021,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 42,
+        "ok": true,
+        "took": 0.548447847366333,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 43,
+        "ok": true,
+        "took": 0.5529530048370361,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 44,
+        "ok": true,
+        "took": 0.5561506748199463,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 45,
+        "ok": true,
+        "took": 0.5387399196624756,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 46,
+        "ok": true,
+        "took": 0.5446078777313232,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 47,
+        "ok": true,
+        "took": 0.5611505508422852,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 48,
+        "ok": true,
+        "took": 0.5453267097473145,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 49,
+        "ok": true,
+        "took": 0.5534992218017578,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 50,
+        "ok": true,
+        "took": 0.5580823421478271,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 51,
+        "ok": true,
+        "took": 0.5578067302703857,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 52,
+        "ok": true,
+        "took": 0.5589573383331299,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 53,
+        "ok": true,
+        "took": 0.5566451549530029,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 54,
+        "ok": true,
+        "took": 0.5562324523925781,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 55,
+        "ok": true,
+        "took": 0.5596075057983398,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 56,
+        "ok": true,
+        "took": 0.5541951656341553,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 57,
+        "ok": true,
+        "took": 0.5582091808319092,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 58,
+        "ok": true,
+        "took": 0.5554249286651611,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 59,
+        "ok": true,
+        "took": 0.5459060668945312,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 60,
+        "ok": true,
+        "took": 0.5520601272583008,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 61,
+        "ok": true,
+        "took": 0.549461841583252,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 62,
+        "ok": true,
+        "took": 0.5492351055145264,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 63,
+        "ok": true,
+        "took": 0.5568239688873291,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 64,
+        "ok": true,
+        "took": 0.5586681365966797,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 65,
+        "ok": true,
+        "took": 0.5599238872528076,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 66,
+        "ok": true,
+        "took": 0.5603992938995361,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 67,
+        "ok": true,
+        "took": 0.5441911220550537,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 68,
+        "ok": true,
+        "took": 0.5534720420837402,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 69,
+        "ok": true,
+        "took": 0.5494358539581299,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 70,
+        "ok": true,
+        "took": 0.5555334091186523,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 71,
+        "ok": true,
+        "took": 0.5657455921173096,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 72,
+        "ok": true,
+        "took": 0.5542111396789551,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 73,
+        "ok": true,
+        "took": 0.5508694648742676,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 74,
+        "ok": true,
+        "took": 0.5589635372161865,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 75,
+        "ok": true,
+        "took": 0.5583057403564453,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 76,
+        "ok": true,
+        "took": 0.557497501373291,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 77,
+        "ok": true,
+        "took": 0.557319164276123,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 78,
+        "ok": true,
+        "took": 0.5546102523803711,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 79,
+        "ok": true,
+        "took": 0.5555346012115479,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 80,
+        "ok": true,
+        "took": 0.5579466819763184,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 81,
+        "ok": true,
+        "took": 0.5419964790344238,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 82,
+        "ok": true,
+        "took": 0.5396380424499512,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 83,
+        "ok": true,
+        "took": 0.5518674850463867,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 84,
+        "ok": true,
+        "took": 0.5455114841461182,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 85,
+        "ok": true,
+        "took": 0.5492725372314453,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 86,
+        "ok": true,
+        "took": 0.5415360927581787,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 87,
+        "ok": true,
+        "took": 0.5571346282958984,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 88,
+        "ok": true,
+        "took": 0.5637667179107666,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 89,
+        "ok": true,
+        "took": 0.556847095489502,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 90,
+        "ok": true,
+        "took": 0.5417392253875732,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 91,
+        "ok": true,
+        "took": 0.5526373386383057,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 92,
+        "ok": true,
+        "took": 0.5634710788726807,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 93,
+        "ok": true,
+        "took": 0.5423882007598877,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 94,
+        "ok": true,
+        "took": 0.5538711547851562,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 95,
+        "ok": true,
+        "took": 0.5564332008361816,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 96,
+        "ok": true,
+        "took": 0.5580313205718994,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 97,
+        "ok": true,
+        "took": 0.5620884895324707,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 98,
+        "ok": true,
+        "took": 0.565819501876831,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 99,
+        "ok": true,
+        "took": 0.5532293319702148,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 100,
+        "ok": true,
+        "took": 0.5452690124511719,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 101,
+        "ok": true,
+        "took": 0.5447113513946533,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 102,
+        "ok": true,
+        "took": 0.5443375110626221,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 103,
+        "ok": true,
+        "took": 0.5458295345306396,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 104,
+        "ok": true,
+        "took": 0.5394983291625977,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 105,
+        "ok": true,
+        "took": 0.5610466003417969,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 106,
+        "ok": true,
+        "took": 0.564462423324585,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 107,
+        "ok": true,
+        "took": 0.5671346187591553,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 108,
+        "ok": true,
+        "took": 0.5674266815185547,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 109,
+        "ok": true,
+        "took": 0.5667853355407715,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 110,
+        "ok": true,
+        "took": 0.5669703483581543,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 111,
+        "ok": true,
+        "took": 0.5674264430999756,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 112,
+        "ok": true,
+        "took": 0.5648541450500488,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 113,
+        "ok": true,
+        "took": 0.5665419101715088,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 114,
+        "ok": true,
+        "took": 0.5653970241546631,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 115,
+        "ok": true,
+        "took": 0.5437595844268799,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 116,
+        "ok": true,
+        "took": 0.5425331592559814,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 117,
+        "ok": true,
+        "took": 0.5376148223876953,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 118,
+        "ok": true,
+        "took": 0.5387299060821533,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 119,
+        "ok": true,
+        "took": 0.561561107635498,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 120,
+        "ok": true,
+        "took": 0.5675210952758789,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 121,
+        "ok": true,
+        "took": 0.5545940399169922,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 122,
+        "ok": true,
+        "took": 0.5795869827270508,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 123,
+        "ok": true,
+        "took": 0.5407905578613281,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 124,
+        "ok": true,
+        "took": 0.5385499000549316,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 125,
+        "ok": true,
+        "took": 0.558793306350708,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 126,
+        "ok": true,
+        "took": 0.5552120208740234,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 127,
+        "ok": true,
+        "took": 0.5525898933410645,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 128,
+        "ok": true,
+        "took": 0.5512351989746094,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 129,
+        "ok": true,
+        "took": 0.5652153491973877,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 130,
+        "ok": true,
+        "took": 0.543245792388916,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 131,
+        "ok": true,
+        "took": 0.5615437030792236,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 132,
+        "ok": true,
+        "took": 0.5427560806274414,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 133,
+        "ok": true,
+        "took": 0.5445995330810547,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 134,
+        "ok": true,
+        "took": 0.5456528663635254,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 135,
+        "ok": true,
+        "took": 0.5435190200805664,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 136,
+        "ok": true,
+        "took": 0.5454447269439697,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 137,
+        "ok": true,
+        "took": 0.5580155849456787,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 138,
+        "ok": true,
+        "took": 0.5385408401489258,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 139,
+        "ok": true,
+        "took": 0.5490944385528564,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 140,
+        "ok": true,
+        "took": 0.5451226234436035,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 141,
+        "ok": true,
+        "took": 0.5395591259002686,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 142,
+        "ok": true,
+        "took": 0.5526046752929688,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 143,
+        "ok": true,
+        "took": 0.5570628643035889,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 144,
+        "ok": true,
+        "took": 0.5542430877685547,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 145,
+        "ok": true,
+        "took": 0.5575230121612549,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 146,
+        "ok": true,
+        "took": 0.5530023574829102,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 147,
+        "ok": true,
+        "took": 0.557725191116333,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 148,
+        "ok": true,
+        "took": 0.558255672454834,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 149,
+        "ok": true,
+        "took": 0.5644116401672363,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 150,
+        "ok": true,
+        "took": 0.5557529926300049,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 151,
+        "ok": true,
+        "took": 0.5583486557006836,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 152,
+        "ok": true,
+        "took": 0.5453524589538574,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 153,
+        "ok": true,
+        "took": 0.545820951461792,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 154,
+        "ok": true,
+        "took": 0.5451798439025879,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 155,
+        "ok": true,
+        "took": 0.5539734363555908,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 156,
+        "ok": true,
+        "took": 0.5646154880523682,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 157,
+        "ok": true,
+        "took": 0.5754580497741699,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 158,
+        "ok": true,
+        "took": 0.5545749664306641,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 159,
+        "ok": true,
+        "took": 0.5644350051879883,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 160,
+        "ok": true,
+        "took": 0.5666244029998779,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 161,
+        "ok": true,
+        "took": 0.5456244945526123,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 162,
+        "ok": true,
+        "took": 0.5585594177246094,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 163,
+        "ok": true,
+        "took": 0.5673434734344482,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 164,
+        "ok": true,
+        "took": 0.5450160503387451,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 165,
+        "ok": true,
+        "took": 0.5535233020782471,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 166,
+        "ok": true,
+        "took": 0.5378589630126953,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 167,
+        "ok": true,
+        "took": 0.5507121086120605,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 168,
+        "ok": true,
+        "took": 0.555901288986206,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 169,
+        "ok": true,
+        "took": 0.5569572448730469,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 170,
+        "ok": true,
+        "took": 0.5507731437683105,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 171,
+        "ok": true,
+        "took": 0.5554993152618408,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 172,
+        "ok": true,
+        "took": 0.5551908016204834,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 173,
+        "ok": true,
+        "took": 0.5425455570220947,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 174,
+        "ok": true,
+        "took": 0.5526552200317383,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 175,
+        "ok": true,
+        "took": 0.5408093929290771,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 176,
+        "ok": true,
+        "took": 0.5465435981750488,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 177,
+        "ok": true,
+        "took": 0.5594234466552734,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 178,
+        "ok": true,
+        "took": 0.5520501136779785,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 179,
+        "ok": true,
+        "took": 0.5580778121948242,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 180,
+        "ok": true,
+        "took": 0.5442025661468506,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 181,
+        "ok": true,
+        "took": 0.5496170520782471,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 182,
+        "ok": true,
+        "took": 0.5437891483306885,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 183,
+        "ok": true,
+        "took": 0.5365653038024902,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 184,
+        "ok": true,
+        "took": 0.5402967929840088,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 185,
+        "ok": true,
+        "took": 0.5594110488891602,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 186,
+        "ok": true,
+        "took": 0.5370209217071533,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 187,
+        "ok": true,
+        "took": 0.5446860790252686,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 188,
+        "ok": true,
+        "took": 0.5514235496520996,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 189,
+        "ok": true,
+        "took": 0.5558264255523682,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 190,
+        "ok": true,
+        "took": 0.5550801753997803,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 191,
+        "ok": true,
+        "took": 0.551224946975708,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 192,
+        "ok": true,
+        "took": 0.5377016067504883,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 193,
+        "ok": true,
+        "took": 0.5460162162780762,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 194,
+        "ok": true,
+        "took": 0.5471529960632324,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 195,
+        "ok": true,
+        "took": 0.5612814426422119,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 196,
+        "ok": true,
+        "took": 0.551438570022583,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 197,
+        "ok": true,
+        "took": 0.5429513454437256,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 198,
+        "ok": true,
+        "took": 0.5439047813415527,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 199,
+        "ok": true,
+        "took": 0.5435044765472412,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 200,
+        "ok": true,
+        "took": 0.5515437126159668,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 201,
+        "ok": true,
+        "took": 0.5576796531677246,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 202,
+        "ok": true,
+        "took": 0.5561647415161133,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 203,
+        "ok": true,
+        "took": 0.5444560050964355,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 204,
+        "ok": true,
+        "took": 0.5519876480102539,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 205,
+        "ok": true,
+        "took": 0.5548751354217529,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 206,
+        "ok": true,
+        "took": 0.5582349300384521,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 207,
+        "ok": true,
+        "took": 0.5582613945007324,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 208,
+        "ok": true,
+        "took": 0.5547995567321777,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 209,
+        "ok": true,
+        "took": 0.5570459365844727,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 210,
+        "ok": true,
+        "took": 0.5572555065155029,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 211,
+        "ok": true,
+        "took": 0.556023359298706,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 212,
+        "ok": true,
+        "took": 0.5609478950500488,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 213,
+        "ok": true,
+        "took": 0.5564162731170654,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 214,
+        "ok": true,
+        "took": 0.5568339824676514,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 215,
+        "ok": true,
+        "took": 0.5547921657562256,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 216,
+        "ok": true,
+        "took": 0.554851770401001,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 217,
+        "ok": true,
+        "took": 0.5563540458679199,
+        "tool": "cracken"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 0,
+        "ok": true,
+        "took": 0.7167506217956543,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 1,
+        "ok": true,
+        "took": 0.72515869140625,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 2,
+        "ok": true,
+        "took": 0.7353575229644775,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 3,
+        "ok": true,
+        "took": 0.7160677909851074,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 4,
+        "ok": true,
+        "took": 0.7254981994628906,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 5,
+        "ok": true,
+        "took": 0.7137322425842285,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 6,
+        "ok": true,
+        "took": 0.7143332958221436,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 7,
+        "ok": true,
+        "took": 0.7103114128112793,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 8,
+        "ok": true,
+        "took": 0.7061185836791992,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 9,
+        "ok": true,
+        "took": 0.7047510147094727,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 10,
+        "ok": true,
+        "took": 0.7115075588226318,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 11,
+        "ok": true,
+        "took": 0.7153110504150391,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 12,
+        "ok": true,
+        "took": 0.7161693572998047,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 13,
+        "ok": true,
+        "took": 0.7145390510559082,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 14,
+        "ok": true,
+        "took": 0.7105944156646729,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 15,
+        "ok": true,
+        "took": 0.7031960487365723,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 16,
+        "ok": true,
+        "took": 0.7051448822021484,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 17,
+        "ok": true,
+        "took": 0.7107565402984619,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 18,
+        "ok": true,
+        "took": 0.7127654552459717,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 19,
+        "ok": true,
+        "took": 0.7190721035003662,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 20,
+        "ok": true,
+        "took": 0.7104759216308594,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 21,
+        "ok": true,
+        "took": 0.7234594821929932,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 22,
+        "ok": true,
+        "took": 0.718341588973999,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 23,
+        "ok": true,
+        "took": 0.7133159637451172,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 24,
+        "ok": true,
+        "took": 0.713740348815918,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 25,
+        "ok": true,
+        "took": 0.7155685424804688,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 26,
+        "ok": true,
+        "took": 0.7148001194000244,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 27,
+        "ok": true,
+        "took": 0.713604211807251,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 28,
+        "ok": true,
+        "took": 0.7139754295349121,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 29,
+        "ok": true,
+        "took": 0.721869945526123,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 30,
+        "ok": true,
+        "took": 0.7281966209411621,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 31,
+        "ok": true,
+        "took": 0.7036592960357666,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 32,
+        "ok": true,
+        "took": 0.7121927738189697,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 33,
+        "ok": true,
+        "took": 0.705810546875,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 34,
+        "ok": true,
+        "took": 0.710963249206543,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 35,
+        "ok": true,
+        "took": 0.7281687259674072,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 36,
+        "ok": true,
+        "took": 0.713712215423584,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 37,
+        "ok": true,
+        "took": 0.7149627208709717,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 38,
+        "ok": true,
+        "took": 0.7127468585968018,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 39,
+        "ok": true,
+        "took": 0.7268006801605225,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 40,
+        "ok": true,
+        "took": 0.7461588382720947,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 41,
+        "ok": true,
+        "took": 0.7167060375213623,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 42,
+        "ok": true,
+        "took": 0.7192671298980713,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 43,
+        "ok": true,
+        "took": 0.7149474620819092,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 44,
+        "ok": true,
+        "took": 0.7234103679656982,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 45,
+        "ok": true,
+        "took": 0.7128667831420898,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 46,
+        "ok": true,
+        "took": 0.7084636688232422,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 47,
+        "ok": true,
+        "took": 0.7111563682556152,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 48,
+        "ok": true,
+        "took": 0.7103152275085449,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 49,
+        "ok": true,
+        "took": 0.7270910739898682,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 50,
+        "ok": true,
+        "took": 0.7136974334716797,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 51,
+        "ok": true,
+        "took": 0.7208771705627441,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 52,
+        "ok": true,
+        "took": 0.7208154201507568,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 53,
+        "ok": true,
+        "took": 0.7224876880645752,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 54,
+        "ok": true,
+        "took": 0.7089438438415527,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 55,
+        "ok": true,
+        "took": 0.7125973701477051,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 56,
+        "ok": true,
+        "took": 0.7166500091552734,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 57,
+        "ok": true,
+        "took": 0.7138345241546631,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 58,
+        "ok": true,
+        "took": 0.7004210948944092,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 59,
+        "ok": true,
+        "took": 0.710686445236206,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 60,
+        "ok": true,
+        "took": 0.7216496467590332,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 61,
+        "ok": true,
+        "took": 0.7153525352478027,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 62,
+        "ok": true,
+        "took": 0.7185730934143066,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 63,
+        "ok": true,
+        "took": 0.7112982273101807,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 64,
+        "ok": true,
+        "took": 0.720707893371582,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 65,
+        "ok": true,
+        "took": 0.7093815803527832,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 66,
+        "ok": true,
+        "took": 0.7265486717224121,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 67,
+        "ok": true,
+        "took": 0.7277657985687256,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 68,
+        "ok": true,
+        "took": 0.7102797031402588,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 69,
+        "ok": true,
+        "took": 0.7061541080474854,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 70,
+        "ok": true,
+        "took": 0.7161047458648682,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 71,
+        "ok": true,
+        "took": 0.7065775394439697,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 72,
+        "ok": true,
+        "took": 0.7076966762542725,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 73,
+        "ok": true,
+        "took": 0.7056241035461426,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 74,
+        "ok": true,
+        "took": 0.7076840400695801,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 75,
+        "ok": true,
+        "took": 0.7152185440063477,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 76,
+        "ok": true,
+        "took": 0.7167661190032959,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 77,
+        "ok": true,
+        "took": 0.7138175964355469,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 78,
+        "ok": true,
+        "took": 0.7023038864135742,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 79,
+        "ok": true,
+        "took": 0.7164137363433838,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 80,
+        "ok": true,
+        "took": 0.7258181571960449,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 81,
+        "ok": true,
+        "took": 0.7086668014526367,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 82,
+        "ok": true,
+        "took": 0.7050004005432129,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 83,
+        "ok": true,
+        "took": 0.707984209060669,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 84,
+        "ok": true,
+        "took": 0.7155055999755859,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 85,
+        "ok": true,
+        "took": 0.7184326648712158,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 86,
+        "ok": true,
+        "took": 0.7127156257629395,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 87,
+        "ok": true,
+        "took": 0.7123534679412842,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 88,
+        "ok": true,
+        "took": 0.7113058567047119,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 89,
+        "ok": true,
+        "took": 0.7051072120666504,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 90,
+        "ok": true,
+        "took": 0.7101342678070068,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 91,
+        "ok": true,
+        "took": 0.7120556831359863,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 92,
+        "ok": true,
+        "took": 0.7151801586151123,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 93,
+        "ok": true,
+        "took": 0.7154366970062256,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 94,
+        "ok": true,
+        "took": 0.711449384689331,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 95,
+        "ok": true,
+        "took": 0.7057497501373291,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 96,
+        "ok": true,
+        "took": 0.7106339931488037,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 97,
+        "ok": true,
+        "took": 0.7197260856628418,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 98,
+        "ok": true,
+        "took": 0.7047591209411621,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 99,
+        "ok": true,
+        "took": 0.7161130905151367,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 100,
+        "ok": true,
+        "took": 0.7136991024017334,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 101,
+        "ok": true,
+        "took": 0.722050666809082,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 102,
+        "ok": true,
+        "took": 0.7256827354431152,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 103,
+        "ok": true,
+        "took": 0.7160813808441162,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 104,
+        "ok": true,
+        "took": 0.7034144401550293,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 105,
+        "ok": true,
+        "took": 0.7118892669677734,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 106,
+        "ok": true,
+        "took": 0.7060980796813965,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 107,
+        "ok": true,
+        "took": 0.7157161235809326,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 108,
+        "ok": true,
+        "took": 0.7028577327728271,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 109,
+        "ok": true,
+        "took": 0.7040829658508301,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 110,
+        "ok": true,
+        "took": 0.7060503959655762,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 111,
+        "ok": true,
+        "took": 0.7030737400054932,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 112,
+        "ok": true,
+        "took": 0.7075488567352295,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 113,
+        "ok": true,
+        "took": 0.7034330368041992,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 114,
+        "ok": true,
+        "took": 0.7091586589813232,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 115,
+        "ok": true,
+        "took": 0.705883264541626,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 116,
+        "ok": true,
+        "took": 0.7310688495635986,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 117,
+        "ok": true,
+        "took": 0.7100527286529541,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 118,
+        "ok": true,
+        "took": 0.6995291709899902,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 119,
+        "ok": true,
+        "took": 0.7105355262756348,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 120,
+        "ok": true,
+        "took": 0.7133893966674805,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 121,
+        "ok": true,
+        "took": 0.7124416828155518,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 122,
+        "ok": true,
+        "took": 0.7161931991577148,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 123,
+        "ok": true,
+        "took": 0.7232024669647217,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 124,
+        "ok": true,
+        "took": 0.7229583263397217,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 125,
+        "ok": true,
+        "took": 0.7238354682922363,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 126,
+        "ok": true,
+        "took": 0.7250957489013672,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 127,
+        "ok": true,
+        "took": 0.724496603012085,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 128,
+        "ok": true,
+        "took": 0.7214710712432861,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 129,
+        "ok": true,
+        "took": 0.7213869094848633,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 130,
+        "ok": true,
+        "took": 0.7044591903686523,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 131,
+        "ok": true,
+        "took": 0.7109525203704834,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 132,
+        "ok": true,
+        "took": 0.706810474395752,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 133,
+        "ok": true,
+        "took": 0.70524001121521,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 134,
+        "ok": true,
+        "took": 0.708000898361206,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 135,
+        "ok": true,
+        "took": 0.7040455341339111,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 136,
+        "ok": true,
+        "took": 0.7031526565551758,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 137,
+        "ok": true,
+        "took": 0.7112748622894287,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 138,
+        "ok": true,
+        "took": 0.7291204929351807,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 139,
+        "ok": true,
+        "took": 0.7218384742736816,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 140,
+        "ok": true,
+        "took": 0.7059297561645508,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 141,
+        "ok": true,
+        "took": 0.717411994934082,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 142,
+        "ok": true,
+        "took": 0.7121701240539551,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 143,
+        "ok": true,
+        "took": 0.7179486751556396,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 144,
+        "ok": true,
+        "took": 0.7113580703735352,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 145,
+        "ok": true,
+        "took": 0.7174715995788574,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 146,
+        "ok": true,
+        "took": 0.7213189601898193,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 147,
+        "ok": true,
+        "took": 0.7091593742370605,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 148,
+        "ok": true,
+        "took": 0.7078530788421631,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 149,
+        "ok": true,
+        "took": 0.7134299278259277,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 150,
+        "ok": true,
+        "took": 0.7305192947387695,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 151,
+        "ok": true,
+        "took": 0.7028579711914062,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 152,
+        "ok": true,
+        "took": 0.7028331756591797,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 153,
+        "ok": true,
+        "took": 0.7069687843322754,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 154,
+        "ok": true,
+        "took": 0.7052700519561768,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 155,
+        "ok": true,
+        "took": 0.7068850994110107,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 156,
+        "ok": true,
+        "took": 0.7109978199005127,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 157,
+        "ok": true,
+        "took": 0.7034108638763428,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 158,
+        "ok": true,
+        "took": 0.7078061103820801,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 159,
+        "ok": true,
+        "took": 0.7044503688812256,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 160,
+        "ok": true,
+        "took": 0.712660551071167,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 161,
+        "ok": true,
+        "took": 0.7023508548736572,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 162,
+        "ok": true,
+        "took": 0.7100741863250732,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 163,
+        "ok": true,
+        "took": 0.7081344127655029,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 164,
+        "ok": true,
+        "took": 0.7060739994049072,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 165,
+        "ok": true,
+        "took": 0.7169010639190674,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 166,
+        "ok": true,
+        "took": 0.7182602882385254,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 167,
+        "ok": true,
+        "took": 0.7028207778930664,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 168,
+        "ok": true,
+        "took": 0.711362361907959,
+        "tool": "maskprocessor"
+    },
+    {
+        "bench": "1-8digits",
+        "iter": 0,
+        "ok": false,
+        "tool": "crunch"
+    }
+]

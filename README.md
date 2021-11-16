@@ -32,16 +32,16 @@ $ ./cracken --wordlist firstnames.txt --wordlist lastnames.lst --charset '12' '?
 
 As of writing this, Cracken is probably the world's fastest wordlist generator:
 
-![bechmarks results](./benchmarks/bench-results.png)
+![bechmarks results](./benchmarks/bench-results.svg)
 
-Cracken has around 20% increased performance over hashcat's fast [maskprocessor][mp] thats written in C.
+Cracken has around 30% increased performance over hashcat's fast [maskprocessor][mp] thats written in C.
 
-Cracken can generate around 1.5 GiB/s per core.
+Cracken can generate around 2 GB/s per core.
 
 more details on [benchmarks/ 🔗](./benchmarks/README.md)
 
-Why speed is important? A typical GPU can test billions passwords per second depending on the format.
-When the wordlist generator produces less words per second than the cracking tool uses - the cracking speed will be slower.
+Why speed is important? A typical GPU can test billions passwords per second depending on the password hash function.
+When the wordlist generator produces fewer words per second than the cracking tool can handle - the cracking speed will degrade.
 
 
 ## Features

@@ -186,7 +186,7 @@ impl<'a> WordGenerator for CharsetGenerator<'a> {
                 .iter()
                 .take(i)
                 .fold(1.to_biguint().unwrap(), |acc, x| {
-                    (acc * x.chars.len()).to_biguint().unwrap()
+                    (acc * x.len).to_biguint().unwrap()
                 });
         }
         combs
@@ -364,7 +364,7 @@ impl<'a> WordGenerator for WordlistGenerator<'a> {
             .iter()
             .map(|item| match item {
                 WordlistItem::Wordlist(wl) => wl.len().to_biguint().unwrap(),
-                WordlistItem::Charset(c) => c.chars.len().to_biguint().unwrap(),
+                WordlistItem::Charset(c) => c.len.to_biguint().unwrap(),
             })
             .product()
     }
