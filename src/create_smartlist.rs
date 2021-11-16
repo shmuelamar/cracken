@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 use std::fs::File;
+use std::hash::Hash;
 use std::io::{BufRead, BufReader};
 use std::iter::FromIterator;
 use std::path::Path;
@@ -112,7 +113,7 @@ impl<P: AsRef<Path> + Sync> SmartlistBuilder<P> {
         let vocab = vocab.into_iter().unique().collect::<Vec<_>>();
 
         // sort by frequency of words in original input files
-        let mut vocab = self.sort_vocab(vocab);
+        let mut vocab = self.sort_vocab(vocab)?;
 
         // apply filters
         if self.min_word_len > 0 {
@@ -202,13 +203,16 @@ impl<P: AsRef<Path> + Sync> SmartlistBuilder<P> {
         D: Decoder + Send + Sync,
         TR: Trainer<Model = M> + Sync,
     {
-        // TODO: error handling - no unwrap
-        let input_data = self
+        let files: Result<Vec<_>, _> = self
             .infiles
             .iter()
-            .map(|f| {
-                BufReader::new(File::open(f).unwrap())
-                    .lines()
+            .map(|fname| File::open(fname).map(BufReader::new))
+            .collect();
+        let files = files?;
+        let input_data = files
+            .into_iter()
+            .map(|fp| {
+                fp.lines()
                     .map(|line| line.unwrap_or_else(|_| "".to_string()))
             })
             .flatten();
@@ -218,16 +222,20 @@ impl<P: AsRef<Path> + Sync> SmartlistBuilder<P> {
         Ok(vocab)
     }
 
-    fn sort_vocab(&self, vocab: Vec<String>) -> Vec<String> {
+    fn sort_vocab(&self, vocab: Vec<String>) -> BoxResult<Vec<String>> {
         let ac = AhoCorasick::new(vocab.to_vec());
         let mut word2count = vec![0i64; vocab.len()];
 
-        let input_data = self
+        let files: Result<Vec<_>, _> = self
             .infiles
             .iter()
+            .map(|fname| File::open(fname).map(BufReader::new))
+            .collect();
+        let files = files?;
+        let input_data = files
+            .into_iter()
             .map(|f| {
-                BufReader::new(File::open(f).unwrap())
-                    .lines()
+                f.lines()
                     .map(|line| line.unwrap_or_else(|_| "".to_string()))
             })
             .flatten();
@@ -239,12 +247,12 @@ impl<P: AsRef<Path> + Sync> SmartlistBuilder<P> {
             }
         }
 
-        vocab
+        Ok(vocab
             .into_iter()
             .enumerate()
-            .sorted_by_key(|(idx, _)| (-(word2count[*idx] as i64), *idx))
+            .sorted_by_key(|(idx, s)| (-(word2count[*idx] as i64), s.to_string()))
             .map(|(_, s)| s)
-            .collect::<Vec<_>>()
+            .collect::<Vec<_>>())
     }
 }
 
@@ -268,9 +276,9 @@ mod tests {
     use crate::test_util;
 
     #[test]
-    fn test_run_smoke() {
+    fn test_build_vocab() {
         let fname = test_util::wordlist_fname("wordlist1.txt");
-        let vocab = SmartlistBuilder::new()
+        let mut vocab = SmartlistBuilder::new()
             .infiles(vec![fname.to_str().unwrap()])
             .min_frequency(0)
             .vocab_max_size(10)
@@ -286,8 +294,14 @@ mod tests {
             .build()
             .unwrap();
 
-        // TODO: asserts
-        println!("{:?}", vocab);
-        println!("{:?}", vocab.len());
+        let mut expected_vocab: Vec<_> = [
+            "1", "123", "12345", "123456", "1234567", "2", "3", "4", "5", "6",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        expected_vocab.sort();
+        vocab.sort();
+        assert_eq!(vocab, expected_vocab);
     }
 }
