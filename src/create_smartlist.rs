@@ -281,7 +281,7 @@ mod tests {
         let mut vocab = SmartlistBuilder::new()
             .infiles(vec![fname.to_str().unwrap()])
             .min_frequency(0)
-            .vocab_max_size(10)
+            .vocab_max_size(25)
             .tokenizers(
                 vec![
                     SmartlistTokenizer::BPE,
@@ -295,7 +295,8 @@ mod tests {
             .unwrap();
 
         let mut expected_vocab: Vec<_> = [
-            "1", "123", "12345", "123456", "1234567", "2", "3", "4", "5", "6",
+            "1", "11", "12", "123", "12345", "123456", "2", "3", "4", "5", "6", "7", "8", "9", "a",
+            "b", "c", "d", "e", "o", "p", "q", "r", "s", "w",
         ]
         .iter()
         .map(|s| s.to_string())
