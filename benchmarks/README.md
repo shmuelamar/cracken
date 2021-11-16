@@ -13,7 +13,7 @@ Cracken can generate around 2 GiB/s per core.
 **Benchmark System Info:**
 
 * Ubuntu 20.04 5.11.0-38-generic x86_64 Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz
-* gcc 7.4.0
+* gcc 9.3.0
 * rustc 1.56.1
 * cracken v0.1.8
 * maskprocessor 0.73
