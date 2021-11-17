@@ -10,7 +10,13 @@ use crate::helpers::RawFileReader;
 use crate::password_entropy::EntropyEstimator;
 use crate::{built_info, BoxResult};
 
-const EXAMPLE_USAGE: &str = r#"Example Usage:
+const EXAMPLE_USAGE: &str = r#"
+For specific subcommand help run: cracken <subcommand> --help
+
+
+Example Usage:
+
+  ## Generate Subcommand Examples:
 
   # all digits from 00000000 to 99999999
   cracken ?d?d?d?d?d?d?d?d
@@ -28,25 +34,43 @@ const EXAMPLE_USAGE: &str = r#"Example Usage:
   cracken -o pwds.txt ?u?l?l?l?l?l?l?d
 
   # custom charset - all hex values
-  cracken -c "0123456789abcdef" "?1?1?1?1"
+  cracken -c 0123456789abcdef '?1?1?1?1'
 
   # 4 custom charsets - the order determines the id of the charset
-  cracken -c "01" -c="ab" -c="de" -c="ef" "?1?2?3?4"
+  cracken -c 01 -c ab -c de -c ef '?1?2?3?4'
 
   # 4 lowercase chars with years 2000-2019 suffix
-  cracken -c "01" "?l?l?l?l20?1?d"
+  cracken -c 01 '?l?l?l?l20?1?d'
 
   # starts with firstname from wordlist followed by 4 digits
-  cracken -w "firstnames.txt" "?w1?d?d?d?d"
+  cracken -w firstnames.txt '?w1?d?d?d?d'
 
   # starts with firstname from wordlist with lastname from wordlist ending with symbol
-  cracken -w "firstnames.txt" -w "lastnames.txt" -c "!@#$" "?w1?w2?1"
+  cracken -w firstnames.txt -w lastnames.txt -c '!@#$' '?w1?w2?1'
 
   # repeating wordlists multiple times and combining charsets
-  cracken -w "verbs.txt" -w "nouns.txt" "?w1?w2?w1?w2?w2?d?d?d"
+  cracken -w verbs.txt -w nouns.txt '?w1?w2?w1?w2?w2?d?d?d'
+
+
+  ## Create Smartlists Subcommand Examples:
+
+  # create smartlist from single file into smart.txt
+  cracken create -f rockyou.txt --smartlist smart.txt
+
+  # create smartlist from multiple files with multiple tokenization algorithms
+  cracken create -t bpe -t unigram -t wordpiece -f rockyou.txt -f passwords.txt -f wikipedia.txt --smartlist smart.txt
+
+  # create smartlist with minimum subword length of 3 and max numbers-only subwords of size 6
+  cracken create -f rockyou.txt --min-word-len 3 --numbers-max-size 6 --smartlist smart.txt
+
+
+  ## Entropy Subcommand Examples:
 
   # estimating entropy of a password
-  cracken entropy --smartlist vocab.txt "helloworld123!"
+  cracken entropy --smartlist vocab.txt 'helloworld123!'
+
+  # estimating entropy of a passwords file with a charset mask entropy (default is hybrid)
+  cracken entropy --smartlist vocab.txt -t charset -p passwords.txt
 
   # estimating the entropy of a passwords file
   cracken entropy --smartlist vocab.txt -p passwords.txt
@@ -211,13 +235,13 @@ There are two types of keyspace size estimations:
             .required(false)
             .conflicts_with("password"),
         ).arg(
-        Arg::with_name("entropy_type")
+        Arg::with_name("mask_type")
             .short("t")
-            .long("entropy-type")
-            .help("type of entropy to output, one of: mask(charsets only), hybrid(charsets+wordlists)")
+            .long("mask-type")
+            .help("type of mask to output, one of: charsets(charsets only), hybrid(charsets+wordlists)")
             .takes_value(true)
             .required(false)
-            .possible_values(&["hybrid", "mask"])
+            .possible_values(&["hybrid", "charset"])
             .conflicts_with("password"),
         )
     ).subcommand(SubCommand::with_name("create")
@@ -390,7 +414,7 @@ pub fn run_entropy_estimator(args: &ArgMatches) -> BoxResult<()> {
     let smartlist_files: Vec<&str> = args.values_of("smartlist").map(|x| x.collect()).unwrap();
     let est = EntropyEstimator::from_files(smartlist_files.as_ref())?;
     let is_summary_only = args.is_present("summary");
-    let entropy_type = args.value_of("entropy_type").unwrap_or("hybrid");
+    let mask_type = args.value_of("mask_type").unwrap_or("hybrid");
     let mut total_entropy = 0f64;
     let mut pwd_count = 0usize;
     let mut stdout = stdout();
@@ -424,9 +448,12 @@ charset-mask-entropy: {:.2}
         for pwd in reader.into_iter() {
             let pwd = pwd?;
             let entropy_result = est.estimate_password_entropy(&pwd)?;
-            let pwd_entropy = match entropy_type {
-                "hybrid" => entropy_result.subword_entropy,
-                "mask" => entropy_result.mask_entropy,
+            let (pwd_entropy, pwd_mask) = match mask_type {
+                "hybrid" => (
+                    entropy_result.subword_entropy,
+                    entropy_result.min_subword_mask,
+                ),
+                "charset" => (entropy_result.mask_entropy, entropy_result.charset_mask),
                 _ => unreachable!("invalid entropy type"),
             };
             if !is_summary_only {
@@ -434,7 +461,7 @@ charset-mask-entropy: {:.2}
                     &mut stdout,
                     "{:.2},{},{}",
                     pwd_entropy,
-                    entropy_result.min_subword_mask,
+                    pwd_mask,
                     String::from_utf8_lossy(&pwd)
                 ) {
                     match e.kind() {
