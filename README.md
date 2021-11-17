@@ -4,7 +4,8 @@
 [![cracken documentation](https://img.shields.io/docsrs/cracken)](https://docs.rs/cracken)
 [![cracken total downloads](https://img.shields.io/crates/d/cracken)](https://crates.io/crates/cracken)
 
-Cracken is a fast password wordlist generator written in pure safe Rust. Inspired by great tools like [maskprocessor][mp] and [Crunch][crunch].
+Cracken is a fast password wordlist generator, Smartlist creation and password hybrid-mask analysis tool (more info on [slides][slides])
+written in pure safe Rust. Inspired by great tools like [maskprocessor][mp], [hashcat][hashcat] and [Crunch][crunch].
 
 
 ## Getting Started
@@ -18,15 +19,33 @@ Cracken is a fast password wordlist generator written in pure safe Rust. Inspire
 generate all words of length 8 starting with uppercase followed by 6 lowercase chars and then a digit:
 
 ```bash
-$ ./cracken -o pwdz.lst '?u?l?l?l?l?l?l?d'
+$ cracken -o pwdz.lst '?u?l?l?l?l?l?l?d'
 ```
 
 generate words from two wordlists with year suffix (1000-2999) `<firstname><lastname><year>`
 
 ```bash
-$ ./cracken --wordlist firstnames.txt --wordlist lastnames.lst --charset '12' '?w1?w2?1?d?d?d'
+$ cracken --wordlist firstnames.txt --wordlist lastnames.lst --charset '12' '?w1?w2?1?d?d?d'
 ```
 
+create a Smartlist of size 50k from subwords extracted from rockyou.txt
+
+```bash
+$ cracken create -f rockyou.txt -m 50000 --smartlist smart.lst
+```
+
+estimate the entropy of hybrid mask of the password HelloWorld123! using a smartlist
+
+```bash
+$ cracken entropy -f smart.lst 'HelloWorld123!'
+
+hybrid-min-split: ["hello", "world1", "2", "3", "!"]
+hybrid-mask: ?w1?w1?d?d?s
+hybrid-min-entropy: 42.73
+--
+charset-mask: ?l?l?l?l?l?l?l?l?l?l?d?d?d?s
+charset-mask-entropy: 61.97
+```
 
 ## Performance
 
@@ -335,6 +354,8 @@ Feel free to submit PRs and open issues.
 
 
 [mp]: https://hashcat.net/wiki/doku.php?id=maskprocessor
+[hashcat]: https://hashcat.net
 [crunch]: https://github.com/crunchsec/crunch
 [releases]: https://github.com/shmuelamar/cracken/releases
+[slides]: ./slides
 [rustc-installation]: https://www.rust-lang.org/tools/install
