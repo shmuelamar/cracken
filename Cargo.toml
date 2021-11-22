@@ -1,10 +1,10 @@
 [package]
 name = "cracken"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["shmuelamar"]
 edition = "2021"
 build = "build.rs"
-description = "a fast password wordlist generator"
+description = "a fast password wordlist generator, Smartlist creation and password hybrid-mask analysis tool"
 homepage = "https://github.com/shmuelamar/cracken"
 repository = "https://github.com/shmuelamar/cracken"
 keywords = ["password", "crack", "cracking", "wordlist-generator", "security"]

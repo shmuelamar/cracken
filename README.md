@@ -4,13 +4,51 @@
 [![cracken documentation](https://img.shields.io/docsrs/cracken)](https://docs.rs/cracken)
 [![cracken total downloads](https://img.shields.io/crates/d/cracken)](https://crates.io/crates/cracken)
 
-Cracken is a fast password wordlist generator, Smartlist creation and password hybrid-mask analysis tool (more info on [slides][slides])
-written in pure safe Rust. Inspired by great tools like [maskprocessor][mp], [hashcat][hashcat] and [Crunch][crunch].
+Cracken is a fast password wordlist generator, Smartlist creation and password hybrid-mask analysis tool
+written in pure safe Rust (more on [talk/][talk]). Inspired by great tools like [maskprocessor][mp], [hashcat][hashcat], [Crunch][crunch] and 🤗 HuggingFace's [tokenizers][tokenizers].
+
+## What? Why? Woot??
+
+At [DeepSec2021][talk-abstract] we presented a new method for analysing passwords as Hybrid-Masks exploiting common substrings in passwords by utilizing NLP tokenizers (more info on [talk/][talk]).
+
+Our method splits a password into its subwords instead of just a characters mask. `HelloWorld123!` splitted into `['Hello', 'World', '123!']` as these three subwords are very common in other passwords.
+
+### Hybrid Masks & Smartlists
+
+* 📄 **Smartlists** - Compact & representative subword lists created from passwords by utilizing NLP tokenizers
+* 🎭 **Hybrid-Mask** - A representation of a password as a combination of wordlists & characters (e.g. `?w1?w2?l?d`)
+
+#### Analyzing RockYou Passwords with Smartlists & Hybrid-Masks:
+
+![Top25 Hybrid Masks from RockYou](./talk/top25_rockyou_hybrid-masks_count.png)
+
+full table [here](./talk/rockyou_hybrid-masks_counts.csv)
+
+
+### Cracken 🐙 is used for:
+* ✅ Generating **`Hybrid-Masks`** very VERY FAST 🦸⚡💨 (see [performance](#performance) section)
+* ✅ Building **`Smartlists`** - compact & representative list of subwords from given passwords files (using 🤗 HuggingFace's [tokenizers][tokenizers])
+* ✅ Analyzing passwords for their `Hybrid-Masks` - building statistics for better password candidates (again very fast)
+
+
+### Possible workflows with Cracken:
+
+#### Simple:
+1. Generate wordlist candidates from a hybrid mask - e.g. `cracken -w rockyou.txt -w 100-most-common.txt '?w1?w2?d?d?d?d?s'`
+2. You can pipe the passwords Cracken generates into `hashcat`, `john` or your favorite password cracker
+
+
+#### Advanced:
+1. Create a Smartlist from existing passwords - `cracken create`
+2. Analyze a passwords list of plaintext passwords - `cracken entropy`
+3. use most frequent `Hybrid-Masks` to generate password candidates fast - `cracken generate -i hybrid-masks.txt`
+
+For more details see [Usage](#usage-info) section
 
 
 ## Getting Started
 
-**download (linux only):** [latest release 🔗][releases]
+**download (linux only currently):** [latest release 🔗][releases]
 
 *for more installation options see `installation` section*
 
@@ -62,16 +100,9 @@ more details on [benchmarks/ 🔗](./benchmarks/README.md)
 Why speed is important? A typical GPU can test billions passwords per second depending on the password hash function.
 When the wordlist generator produces fewer words per second than the cracking tool can handle - the cracking speed will degrade.
 
+### Hybrid-Masks Analysis Performance
 
-## Features
-
-* [x] super fast wordlist generator
-* [x] fully compatible with maskprocessor mask syntax
-* [x] wordlists as input
-* [x] custom charsets
-* [x] fixed chars at any position
-* [x] min/max word lengths
-* [x] combinations - calculates number of total passwords from the mask
+Cracken uses `A*` algorithm to analyze passwords very fast. it can find the minimal Hybrid-Mask of passwords file at rate of **~100k Passwords/sec** (`cracken entropy -f words1.txt -f words2.txt ... -p pwds.txt`)
 
 
 ## Installation
@@ -79,7 +110,7 @@ When the wordlist generator produces fewer words per second than the cracking to
 install Cracken or compile from source
 
 
-### Download Binary (Linux Only)
+### Download Binary (Linux Only Currently)
 
 download latest release from [releases 🔗][releases]
 
@@ -336,7 +367,7 @@ ARGS:
 
 ## License
 
-Cracken is licensed under MIT. **THIS PROJECT SHOULD BE USED FOR LEGAL PURPOSES ONLY**
+Cracken is licensed under MIT. **THIS PROJECT MUST BE USED FOR LEGAL PURPOSES ONLY ⚖️**
 
 
 ## Contributing
@@ -344,18 +375,12 @@ Cracken is licensed under MIT. **THIS PROJECT SHOULD BE USED FOR LEGAL PURPOSES 
 Cracken is under active development, if you wish to help below is this the partial roadmap for this project.
 Feel free to submit PRs and open issues.
 
-### Features List
-
-* [ ] input file of list of masks
-* [ ] stderr status tracker thread
-* [ ] wordlists load modes (currently all in memory) - add from disk / mmap
-* [ ] multithreading
-* [ ] compression
-
 
 [mp]: https://hashcat.net/wiki/doku.php?id=maskprocessor
 [hashcat]: https://hashcat.net
 [crunch]: https://github.com/crunchsec/crunch
 [releases]: https://github.com/shmuelamar/cracken/releases
-[slides]: ./slides
+[talk]: ./talk
 [rustc-installation]: https://www.rust-lang.org/tools/install
+[talk-abstract]: https://deepsec.net/speaker.html#PSLOT517
+[tokenizers]: https://github.com/huggingface/tokenizers
